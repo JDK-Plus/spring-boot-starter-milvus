@@ -1,6 +1,7 @@
 package plus.jdk.milvus.config;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
@@ -27,12 +28,12 @@ public class MilvusPlusProperties {
     private String password;
 
     /**
-     * milvus节点列表
+     * 主机名
      */
-    private String[] endpoints;
+    private String host;
 
     /**
-     * watcher核心线程数
+     * 端口
      */
-    private int watcherCoreThreadPollSize = 10;
+    private Integer port;
 }
