@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.google.gson.Gson;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -26,7 +27,9 @@ import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.ColumnDefinition;
 import plus.jdk.milvus.model.CollectionDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
+import plus.jdk.milvus.model.WrapperModel;
 import plus.jdk.milvus.record.VectorModel;
+import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -44,15 +47,17 @@ public class MilvusClientService {
 
     private final ApplicationContext applicationContext;
 
+    private final Gson gson = new Gson();
+
     private final Map<Class<?>, CollectionDefinition> tableDefinitionMap = new ConcurrentHashMap<>();
 
-    private String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
+    public String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
         LambdaMeta lambdaMeta = LambdaUtils.extract(column);
         String attributeName = PropertyNamer.methodToProperty(lambdaMeta.getImplMethodName());
         Field field = null;
-        try{
+        try {
             field = clazz.getDeclaredField(attributeName);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new MilvusException(String.format("unknown attributeName '%s'", attributeName));
         }
         VectorCollectionColumn vectorCollectionColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
@@ -288,7 +293,7 @@ public class MilvusClientService {
             fieldBuilder.withPartitionKey(column.getPartitionKey());
             fieldBuilder.withDataType(column.getDataType());
             fieldBuilder.withPrimaryKey(column.getPrimary());
-            if (column.getDataType() == DataType.BinaryVector || column.getDataType() == DataType.FloatVector) {
+            if (column.vectorColumn()) {
                 fieldBuilder.withDimension(column.getVectorDimension());
             }
             if (column.getDataType() == DataType.VarChar) {
@@ -297,7 +302,7 @@ public class MilvusClientService {
             if (column.getPrimary()) {
                 fieldBuilder.withAutoID(true);
             }
-            if(column.getDataType() == DataType.Int64 || column.getDataType() == DataType.VarChar) {
+            if (column.canBePartitionKey()) {
                 fieldBuilder.withPartitionKey(column.getPartitionKey());
             }
             builder.addFieldType(fieldBuilder.build());
@@ -307,5 +312,41 @@ public class MilvusClientService {
             throw new MilvusException(resultR.getException().getMessage());
         }
         return true;
+    }
+
+    public <T extends VectorModel<?>> SearchResults search(Integer topK, LambdaSearchWrapper<T> wrapper, Class<T> clazz,
+                                                           ConsistencyLevelEnum consistencyLevel, IIndexExtra extra) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        List<String> outFields = new ArrayList<>();
+        for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
+            if(columnDefinition.vectorColumn()) {
+                continue;
+            }
+            outFields.add(columnDefinition.getName());
+        }
+        SearchParam.Builder builder = SearchParam.newBuilder();
+        String vectorColumnName = getColumnName(wrapper.getVectorColumn(), clazz);
+        ColumnDefinition columnDefinition = collectionDefinition.getColumnByColumnName(vectorColumnName);
+        VectorTypeHandler vectorTypeHandler = columnDefinition.getVectorTypeHandler();
+        List<?> vectors = vectorTypeHandler.serialize(wrapper.getVectorValue());
+        builder.withVectors(vectors);
+        builder.withVectorFieldName(columnDefinition.getName());
+        builder.withCollectionName(collectionDefinition.getName());
+        builder.withConsistencyLevel(consistencyLevel);
+        builder.withMetricType(columnDefinition.getMetricType());
+        builder.withOutFields(outFields);
+        builder.withTopK(topK);
+        String expression = wrapper.buildExpression(clazz);
+        if(!StringUtils.isEmpty(expression)) {
+            builder.withExpr(expression);
+        }
+        if(extra != null) {
+            builder.withParams(gson.toJson(extra));
+        }
+        R<SearchResults> resultR = milvusClient.search(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return resultR.getData();
     }
 }

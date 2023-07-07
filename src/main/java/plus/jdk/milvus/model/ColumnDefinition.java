@@ -73,4 +73,12 @@ public class ColumnDefinition {
      * <a href="https://milvus.io/docs/metric.md">...</a>
      */
     private MetricType metricType = MetricType.L2;
+
+    public boolean canBePartitionKey(){
+        return dataType == DataType.Int64 || dataType == DataType.VarChar;
+    }
+
+    public boolean vectorColumn() {
+        return DataType.BinaryVector == dataType || DataType.FloatVector == dataType;
+    }
 }
