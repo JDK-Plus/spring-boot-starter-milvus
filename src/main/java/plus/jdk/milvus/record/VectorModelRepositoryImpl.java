@@ -1,7 +1,5 @@
 package plus.jdk.milvus.record;
 
-import io.milvus.grpc.MutationResult;
-import io.milvus.param.R;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.selector.MilvusSelector;
@@ -17,8 +15,13 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         return milvusClientService.insert(vectorModel);
     }
 
-    public boolean createTable(Class<T> clazz) throws MilvusException {
+    public boolean createCollection(Class<T> clazz) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createTable(clazz);
+        return milvusClientService.createCollection(clazz);
+    }
+
+    public void loadCollection(Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        milvusClientService.loadCollection(clazz);
     }
 }

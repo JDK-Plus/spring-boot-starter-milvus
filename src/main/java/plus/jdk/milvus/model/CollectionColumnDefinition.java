@@ -7,7 +7,7 @@ import plus.jdk.milvus.global.VectorTypeHandler;
 import java.lang.reflect.Field;
 
 @Data
-public class TableColumnDefinition {
+public class CollectionColumnDefinition {
 
     /**
      * 是否是主键

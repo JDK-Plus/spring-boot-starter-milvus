@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface VectorTableName {
+public @interface VectorCollectionName {
 
     /**
      * 表名称

@@ -1,14 +1,12 @@
 package plus.jdk.milvus.model;
 
 import lombok.Data;
-import plus.jdk.milvus.record.VectorModel;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class TableDefinition {
+public class CollectionDefinition {
     /**
      * 表名称
      */
@@ -32,5 +30,14 @@ public class TableDefinition {
     /**
      * 表字段
      */
-    private List<TableColumnDefinition> columns = new ArrayList<>();
+    private List<CollectionColumnDefinition> columns = new ArrayList<>();
+
+    public CollectionColumnDefinition getPrimaryColumn() {
+        for(CollectionColumnDefinition collectionColumnDefinition :columns) {
+            if(collectionColumnDefinition.getPrimary()) {
+                return collectionColumnDefinition;
+            }
+        }
+        return null;
+    }
 }

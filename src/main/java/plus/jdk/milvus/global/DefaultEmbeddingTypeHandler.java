@@ -5,24 +5,20 @@ import plus.jdk.milvus.annotation.EmbeddingHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @EmbeddingHandler
-public class DefaultEmbeddingTypeHandler implements VectorTypeHandler<Object, Byte> {
+public class DefaultEmbeddingTypeHandler implements VectorTypeHandler<Object, Object> {
 
     @Override
-    public List<Byte> serialize(Object data) {
-        byte[] bytes = data.toString().getBytes(StandardCharsets.UTF_8);
-        List<Byte> byteList = new ArrayList<>();
-        for (byte value : bytes) {
-            byteList.add(value);
-        }
-        return byteList;
+    public List<Object> serialize(Object data) {
+        return Collections.singletonList(data);
     }
 
     @Override
-    public Object deserialize(List<Byte> data) {
+    public Object deserialize(List<Object> data) {
         return null;
     }
 }
