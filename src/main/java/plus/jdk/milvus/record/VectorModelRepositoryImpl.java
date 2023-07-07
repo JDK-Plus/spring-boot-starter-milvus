@@ -24,4 +24,10 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         milvusClientService.loadCollection(clazz);
     }
+
+
+    public void releaseCollection(Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        milvusClientService.releaseCollection(clazz);
+    }
 }

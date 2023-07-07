@@ -7,6 +7,7 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import lombok.extern.slf4j.Slf4j;
@@ -57,21 +58,6 @@ public class MilvusClientService {
         this.applicationContext = applicationContext;
         this.milvusClient = new MilvusServiceClient(connectParam);
     }
-
-    private List<List<Float>> generateFloatVectors(int count) {
-        Random ran = new Random();
-        int VECTOR_DIM = 64;
-        List<List<Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            List<Float> vector = new ArrayList<>();
-            for (int i = 0; i < VECTOR_DIM; ++i) {
-                vector.add(ran.nextFloat());
-            }
-            vectors.add(vector);
-        }
-        return vectors;
-    }
-
 
     protected List<Field> getDeclaredFields(Class<?> clazz, List<Field> fields) {
         if (clazz == null) {
@@ -171,6 +157,15 @@ public class MilvusClientService {
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
             throw new MilvusException(resultR.getException().getMessage());
         }
+    }
+
+    public <T extends VectorModel<?>> void releaseCollection(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        milvusClient.releaseCollection(
+                ReleaseCollectionParam.newBuilder()
+                        .withCollectionName(collectionDefinition.getName())
+                        .build()
+        );
     }
 
     public <T extends VectorModel<?>> boolean createCollection(Class<T> clazz) throws MilvusException {
