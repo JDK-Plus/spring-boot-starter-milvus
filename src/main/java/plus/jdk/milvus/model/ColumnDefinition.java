@@ -1,13 +1,15 @@
 package plus.jdk.milvus.model;
 
 import io.milvus.grpc.DataType;
+import io.milvus.param.IndexType;
+import io.milvus.param.MetricType;
 import lombok.Data;
 import plus.jdk.milvus.global.VectorTypeHandler;
 
 import java.lang.reflect.Field;
 
 @Data
-public class CollectionColumnDefinition {
+public class ColumnDefinition {
 
     /**
      * 是否是主键
@@ -50,5 +52,25 @@ public class CollectionColumnDefinition {
      */
     private Integer maxLength = 128;
 
+    /**
+     * 是否将该字段置为分区键
+     */
     private Boolean partitionKey = false;
+
+    /**
+     * 是否基于该字段创建索引
+     */
+    private boolean index = false;
+
+    /**
+     * 索引类型
+     * <a href="https://milvus.io/docs/index.md">...</a>
+     */
+    private IndexType indexType = IndexType.HNSW;
+
+    /**
+     * 度量类型
+     * <a href="https://milvus.io/docs/metric.md">...</a>
+     */
+    private MetricType metricType = MetricType.L2;
 }

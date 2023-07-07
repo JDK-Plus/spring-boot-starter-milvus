@@ -52,10 +52,9 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService.releaseCollection(clazz);
     }
 
-    public boolean createIndex(Class<T> clazz, String indexName, SFunction<T, ?> column,
-                               IndexType indexType, MetricType metricType, IIndexExtra extraParam) throws MilvusException {
+    public boolean createIndex(Class<T> clazz, String indexName, SFunction<T, ?> column, IIndexExtra extraParam) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createIndex(clazz, indexName, column, indexType, metricType, extraParam);
+        return milvusClientService.createIndex(clazz, indexName, column, extraParam);
     }
 
     public boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {

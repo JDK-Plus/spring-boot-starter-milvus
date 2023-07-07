@@ -1,6 +1,8 @@
 package plus.jdk.milvus.annotation;
 
 import io.milvus.grpc.DataType;
+import io.milvus.param.IndexType;
+import io.milvus.param.MetricType;
 import plus.jdk.milvus.global.DefaultEmbeddingTypeHandler;
 import plus.jdk.milvus.global.VectorTypeHandler;
 
@@ -52,4 +54,21 @@ public @interface VectorCollectionColumn {
      * 将字段设置为分区键。分区键字段的值经过哈希处理并分发到不同的逻辑分区。只有 int64 和 varchar 类型字段可以是分区键。主键字段不能是分区键。
      */
     boolean partitionKey() default false;
+
+    /**
+     * 是否基于该字段创建索引
+     */
+    boolean index() default false;
+
+    /**
+     * 索引类型
+     * <a href="https://milvus.io/docs/index.md">...</a>
+     */
+    IndexType indexType() default IndexType.HNSW;
+
+    /**
+     * 度量类型
+     * <a href="https://milvus.io/docs/metric.md">...</a>
+     */
+    MetricType metricType() default MetricType.L2;
 }

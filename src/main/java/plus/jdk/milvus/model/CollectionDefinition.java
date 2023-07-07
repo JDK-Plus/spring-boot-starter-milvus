@@ -30,12 +30,21 @@ public class CollectionDefinition {
     /**
      * 表字段
      */
-    private List<CollectionColumnDefinition> columns = new ArrayList<>();
+    private List<ColumnDefinition> columns = new ArrayList<>();
 
-    public CollectionColumnDefinition getPrimaryColumn() {
-        for(CollectionColumnDefinition collectionColumnDefinition :columns) {
-            if(collectionColumnDefinition.getPrimary()) {
-                return collectionColumnDefinition;
+    public ColumnDefinition getPrimaryColumn() {
+        for(ColumnDefinition columnDefinition :columns) {
+            if(columnDefinition.getPrimary()) {
+                return columnDefinition;
+            }
+        }
+        return null;
+    }
+
+    public ColumnDefinition getColumnByColumnName(String columnName) {
+        for(ColumnDefinition columnDefinition :columns) {
+            if(columnDefinition.getName().equals(columnName)) {
+                return columnDefinition;
             }
         }
         return null;

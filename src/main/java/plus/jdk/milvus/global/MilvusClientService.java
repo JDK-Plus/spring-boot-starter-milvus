@@ -23,7 +23,7 @@ import plus.jdk.milvus.annotation.VectorCollectionColumn;
 import plus.jdk.milvus.annotation.VectorCollectionName;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.config.MilvusPlusProperties;
-import plus.jdk.milvus.model.CollectionColumnDefinition;
+import plus.jdk.milvus.model.ColumnDefinition;
 import plus.jdk.milvus.model.CollectionDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
@@ -107,7 +107,7 @@ public class MilvusClientService {
             }
             String columnName = tableColumn.name();
             VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
-            CollectionColumnDefinition columnDefinition = new CollectionColumnDefinition();
+            ColumnDefinition columnDefinition = new ColumnDefinition();
             columnDefinition.setDesc(tableColumn.desc());
             columnDefinition.setName(columnName);
             columnDefinition.setPrimary(tableColumn.primary());
@@ -117,6 +117,9 @@ public class MilvusClientService {
             columnDefinition.setPartitionKey(tableColumn.partitionKey());
             columnDefinition.setVectorDimension(tableColumn.vectorDimension());
             columnDefinition.setMaxLength(tableColumn.maxLength());
+            columnDefinition.setIndex(tableColumn.index());
+            columnDefinition.setIndexType(tableColumn.indexType());
+            columnDefinition.setMetricType(tableColumn.metricType());
             collectionDefinition.getColumns().add(columnDefinition);
         }
         this.tableDefinitionMap.put(clazz, collectionDefinition);
@@ -134,7 +137,7 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = getTableDefinition(vectorModel.getClass());
         InsertParam.Builder builder = InsertParam.newBuilder();
         List<InsertParam.Field> dataFields = new ArrayList<>();
-        for (CollectionColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
+        for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
             ReflectionUtils.makeAccessible(columnDefinition.getField());
             String columnName = columnDefinition.getName();
             Object value = ReflectionUtils.getField(columnDefinition.getField(), vectorModel);
@@ -156,7 +159,7 @@ public class MilvusClientService {
             throw new MilvusException(resultR.getException().getMessage());
         }
         if (resultR.getData() != null && resultR.getData().getIDs().getIntId().getDataList().size() > 0) {
-            CollectionColumnDefinition column = collectionDefinition.getPrimaryColumn();
+            ColumnDefinition column = collectionDefinition.getPrimaryColumn();
             ReflectionUtils.makeAccessible(column.getField());
             Object id = resultR.getData().getIDs().getIntId().getDataList().get(0);
             ReflectionUtils.setField(column.getField(), vectorModel, id);
@@ -251,16 +254,17 @@ public class MilvusClientService {
         return resultR.getData().getProgress();
     }
 
-    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column,
-                                                          IndexType indexType, MetricType metricType, IIndexExtra extra) throws MilvusException {
+    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName,
+                                                          SFunction<?, ?> column, IIndexExtra extra) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         CreateIndexParam.Builder builder = CreateIndexParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         String columnName = getColumnName(column, clazz);
+        ColumnDefinition columnDefinition = collectionDefinition.getColumnByColumnName(columnName);
         builder.withFieldName(columnName);
         builder.withIndexName(indexName);
-        builder.withIndexType(indexType);
-        builder.withMetricType(metricType);
+        builder.withIndexType(columnDefinition.getIndexType());
+        builder.withMetricType(columnDefinition.getMetricType());
         if (extra != null) {
             builder.withExtraParam(new Gson().toJson(extra));
         }
@@ -277,7 +281,7 @@ public class MilvusClientService {
         CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         builder.withDescription(collectionDefinition.getDescription());
-        for (CollectionColumnDefinition column : collectionDefinition.getColumns()) {
+        for (ColumnDefinition column : collectionDefinition.getColumns()) {
             FieldType.Builder fieldBuilder = FieldType.newBuilder();
             fieldBuilder.withName(column.getName());
             fieldBuilder.withDescription(column.getDesc());
