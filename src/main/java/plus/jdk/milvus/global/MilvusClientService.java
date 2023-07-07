@@ -7,10 +7,7 @@ import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.SearchResults;
 import io.milvus.param.*;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.LoadCollectionParam;
-import io.milvus.param.collection.ReleaseCollectionParam;
+import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
@@ -176,6 +173,33 @@ public class MilvusClientService {
         );
     }
 
+    public <T extends VectorModel<?>> void dropCollection(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        DropCollectionParam.Builder builder = DropCollectionParam.newBuilder()
+                .withCollectionName(collectionDefinition.getName());
+        if(!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+            builder.withDatabaseName(collectionDefinition.getDatabase());
+        }
+        R<RpcStatus> resultR = milvusClient.dropCollection(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+    }
+
+    public <T extends VectorModel<?>> boolean hasCollection(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        HasCollectionParam.Builder builder = HasCollectionParam.newBuilder()
+                .withCollectionName(collectionDefinition.getName());
+        if(!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+            builder.withDatabaseName(collectionDefinition.getDatabase());
+        }
+        R<Boolean> resultR = milvusClient.hasCollection(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return resultR.getData();
+    }
+
     public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, SFunction<?, ?> column,
                                                           IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
@@ -184,7 +208,9 @@ public class MilvusClientService {
         builder.withFieldName(getColumnName(column));
         builder.withIndexType(indexType);
         builder.withMetricType(MetricType.L2);
-        builder.withExtraParam(extraParam);
+        if(extraParam != null) {
+            builder.withExtraParam(extraParam);
+        }
         builder.withSyncMode(Boolean.FALSE);
         R<RpcStatus> resultR = milvusClient.createIndex(builder.build());
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
