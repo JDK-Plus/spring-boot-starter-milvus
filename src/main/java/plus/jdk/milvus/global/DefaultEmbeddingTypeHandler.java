@@ -9,15 +9,20 @@ import java.util.List;
 
 @Slf4j
 @EmbeddingHandler
-public class DefaultEmbeddingTypeHandler implements EmbeddingTypeHandler<Object, Byte> {
+public class DefaultEmbeddingTypeHandler implements VectorTypeHandler<Object, Byte> {
 
     @Override
-    public List<Byte> computeDataVector(Object data) {
+    public List<Byte> serialize(Object data) {
         byte[] bytes = data.toString().getBytes(StandardCharsets.UTF_8);
         List<Byte> byteList = new ArrayList<>();
         for (byte value : bytes) {
             byteList.add(value);
         }
         return byteList;
+    }
+
+    @Override
+    public Object deserialize(List<Byte> data) {
+        return null;
     }
 }

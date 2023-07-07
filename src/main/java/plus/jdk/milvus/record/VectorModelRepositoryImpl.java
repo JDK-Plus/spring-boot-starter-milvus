@@ -8,16 +8,17 @@ import plus.jdk.milvus.selector.MilvusSelector;
 
 import java.io.Serializable;
 
-public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel>> implements Serializable {
+public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
-    private final MilvusClientService milvusClientService;
+    private MilvusClientService milvusClientService;
 
-    public VectorModelRepositoryImpl() {
-        this.milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-    }
-
-    public R<MutationResult> insert(T vectorModel) throws MilvusException {
+    public boolean insert(T vectorModel) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.insert(vectorModel);
     }
 
+    public boolean createTable(Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.createTable(clazz);
+    }
 }

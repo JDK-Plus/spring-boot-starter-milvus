@@ -3,7 +3,9 @@ package plus.jdk.milvus.global;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.SearchResults;
-import io.milvus.param.IndexType;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +25,10 @@ import plus.jdk.milvus.model.TableColumnDefinition;
 import plus.jdk.milvus.model.TableDefinition;
 import plus.jdk.milvus.record.VectorModel;
 
-import javax.naming.directory.SearchResult;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -79,8 +81,7 @@ public class MilvusClientService {
         return fields;
     }
 
-    protected <T extends VectorModel<?>> TableDefinition getTableDefinition(T vectorModel) throws MilvusException {
-        Class<?> clazz = vectorModel.getClass();
+    public <T extends VectorModel<?>> TableDefinition getTableDefinition(Class<T> clazz) throws MilvusException {
         if (tableDefinitionMap.containsKey(clazz)) {
             return tableDefinitionMap.get(clazz);
         }
@@ -101,12 +102,13 @@ public class MilvusClientService {
                 throw new MilvusException("table column must annotation with @VectorTableField");
             }
             String columnName = tableColumn.name();
-            EmbeddingTypeHandler<?, ?> embeddingTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
+            VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
             TableColumnDefinition columnDefinition = new TableColumnDefinition();
             columnDefinition.setDesc(tableColumn.desc());
             columnDefinition.setName(columnName);
+            columnDefinition.setPrimary(tableColumn.primary());
             columnDefinition.setDataType(tableColumn.dataType());
-            columnDefinition.setEmbeddingTypeHandler(tableColumn.EmbeddingTypeHandler());
+            columnDefinition.setVectorTypeHandler(vectorTypeHandler);
             columnDefinition.setField(field);
             tableDefinition.getColumns().add(columnDefinition);
         }
@@ -115,22 +117,22 @@ public class MilvusClientService {
     }
 
     public R<SearchResults> search(VectorModel<?> object) throws MilvusException {
-        TableDefinition tableDefinition = getTableDefinition(object);
+        TableDefinition tableDefinition = getTableDefinition(object.getClass());
         SearchParam.Builder builder = SearchParam.newBuilder();
         return milvusClient.search(builder.build());
     }
 
 
-    public <T extends VectorModel<?>> R<MutationResult> insert(T vectorModel) throws MilvusException {
-        TableDefinition tableDefinition = getTableDefinition(vectorModel);
+    public <T extends VectorModel<?>> Boolean insert(T vectorModel) throws MilvusException {
+        TableDefinition tableDefinition = getTableDefinition(vectorModel.getClass());
         InsertParam.Builder builder = InsertParam.newBuilder();
         List<InsertParam.Field> dataFields = new ArrayList<>();
         for (TableColumnDefinition columnDefinition : tableDefinition.getColumns()) {
             ReflectionUtils.makeAccessible(columnDefinition.getField());
             String columnName = columnDefinition.getName();;
             Object value = ReflectionUtils.getField(columnDefinition.getField(), vectorModel);
-            EmbeddingTypeHandler embeddingTypeHandler = beanFactory.getBean(columnDefinition.getEmbeddingTypeHandler());
-            List<?> dataVector = embeddingTypeHandler.computeDataVector(value);
+            VectorTypeHandler vectorTypeHandler = columnDefinition.getVectorTypeHandler();
+            List<?> dataVector = vectorTypeHandler.serialize(value);
             dataFields.add(new InsertParam.Field(columnName, dataVector));
         }
         if (!StringUtils.isEmpty(tableDefinition.getDatabase())) {
@@ -139,9 +141,27 @@ public class MilvusClientService {
         builder.withCollectionName(tableDefinition.getName());
         builder.withFields(dataFields);
         InsertParam insertParam = builder.build();
-        return milvusClient.insert(insertParam);
+        R<MutationResult> resultR = milvusClient.insert(insertParam);
+        return resultR.getStatus() != R.Status.Success.getCode();
     }
 
+    public <T extends VectorModel<?>> boolean createTable(Class<T> clazz) throws MilvusException {
+        TableDefinition tableDefinition = getTableDefinition(clazz);
+        CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
+        builder.withCollectionName(tableDefinition.getName());
+        builder.withDescription(tableDefinition.getDescription());
+        for(TableColumnDefinition column:tableDefinition.getColumns()) {
+            FieldType.Builder fieldBuilder = FieldType.newBuilder();
+            fieldBuilder.withName(column.getName())
+                    .withDescription(column.getDesc())
+                    .withDataType(column.getDataType())
+                    .withPrimaryKey(column.getPrimary())
+                    .withAutoID(true);
+            builder.addFieldType(fieldBuilder.build());
+        }
+        R<RpcStatus> response = milvusClient.createCollection(builder.build());
+        return response.getStatus() != R.Status.Success.getCode();
+    }
 
     public static void main(String[] args) {
 

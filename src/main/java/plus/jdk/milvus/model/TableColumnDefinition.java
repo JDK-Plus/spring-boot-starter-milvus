@@ -2,12 +2,18 @@ package plus.jdk.milvus.model;
 
 import io.milvus.grpc.DataType;
 import lombok.Data;
-import plus.jdk.milvus.global.EmbeddingTypeHandler;
+import plus.jdk.milvus.global.VectorTypeHandler;
 
 import java.lang.reflect.Field;
 
 @Data
 public class TableColumnDefinition {
+
+    /**
+     * 是否是主键
+     */
+    private Boolean primary;
+
     /**
      * 字段名
      */
@@ -21,7 +27,7 @@ public class TableColumnDefinition {
     /**
      * 数据向量化处理的handler
      */
-    private Class<? extends EmbeddingTypeHandler<?, ?>> EmbeddingTypeHandler;
+    private VectorTypeHandler<?, ?> vectorTypeHandler;
 
     /**
      * 字段描述
