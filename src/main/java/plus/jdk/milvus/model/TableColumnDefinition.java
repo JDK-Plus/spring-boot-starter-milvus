@@ -39,4 +39,14 @@ public class TableColumnDefinition {
      * 字段
      */
     private Field field;
+
+    /**
+     * 向量维度,其他类型不用指定
+     */
+    private Integer vectorDimension = 1024;
+
+    /**
+     * varchar类型最大长度, 其他类型不用指定
+     */
+    private Integer maxLength = 128;
 }

@@ -28,7 +28,6 @@ import plus.jdk.milvus.record.VectorModel;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -94,7 +93,7 @@ public class MilvusClientService {
         tableDefinition.setName(vectorTableName.name());
         tableDefinition.setDatabase(vectorTableName.database());
         tableDefinition.setClazz(clazz);
-        List<Field> clazzFields = getDeclaredFields(clazz, new ArrayList<>());
+        Field[] clazzFields = clazz.getDeclaredFields();
         for (Field field : clazzFields) {
             ReflectionUtils.makeAccessible(field);
             VectorTableColumn tableColumn = field.getDeclaredAnnotation(VectorTableColumn.class);
@@ -110,6 +109,8 @@ public class MilvusClientService {
             columnDefinition.setDataType(tableColumn.dataType());
             columnDefinition.setVectorTypeHandler(vectorTypeHandler);
             columnDefinition.setField(field);
+            columnDefinition.setVectorDimension(tableColumn.vectorDimension());
+            columnDefinition.setMaxLength(tableColumn.maxLength());
             tableDefinition.getColumns().add(columnDefinition);
         }
         this.tableDefinitionMap.put(clazz, tableDefinition);
@@ -129,7 +130,8 @@ public class MilvusClientService {
         List<InsertParam.Field> dataFields = new ArrayList<>();
         for (TableColumnDefinition columnDefinition : tableDefinition.getColumns()) {
             ReflectionUtils.makeAccessible(columnDefinition.getField());
-            String columnName = columnDefinition.getName();;
+            String columnName = columnDefinition.getName();
+            ;
             Object value = ReflectionUtils.getField(columnDefinition.getField(), vectorModel);
             VectorTypeHandler vectorTypeHandler = columnDefinition.getVectorTypeHandler();
             List<?> dataVector = vectorTypeHandler.serialize(value);
@@ -142,7 +144,7 @@ public class MilvusClientService {
         builder.withFields(dataFields);
         InsertParam insertParam = builder.build();
         R<MutationResult> resultR = milvusClient.insert(insertParam);
-        return resultR.getStatus() != R.Status.Success.getCode();
+        return resultR.getStatus() == R.Status.Success.getCode();
     }
 
     public <T extends VectorModel<?>> boolean createTable(Class<T> clazz) throws MilvusException {
@@ -150,17 +152,25 @@ public class MilvusClientService {
         CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
         builder.withCollectionName(tableDefinition.getName());
         builder.withDescription(tableDefinition.getDescription());
-        for(TableColumnDefinition column:tableDefinition.getColumns()) {
+        for (TableColumnDefinition column : tableDefinition.getColumns()) {
             FieldType.Builder fieldBuilder = FieldType.newBuilder();
-            fieldBuilder.withName(column.getName())
-                    .withDescription(column.getDesc())
-                    .withDataType(column.getDataType())
-                    .withPrimaryKey(column.getPrimary())
-                    .withAutoID(true);
+            fieldBuilder.withName(column.getName());
+            fieldBuilder.withDescription(column.getDesc());
+            fieldBuilder.withDataType(column.getDataType());
+            fieldBuilder.withPrimaryKey(column.getPrimary());
+            if(column.getDataType() == DataType.BinaryVector || column.getDataType() == DataType.FloatVector) {
+                fieldBuilder.withDimension(column.getVectorDimension());
+            }
+            if(column.getDataType() == DataType.VarChar) {
+                fieldBuilder.withMaxLength(column.getMaxLength());
+            }
+            if(column.getPrimary()) {
+                fieldBuilder.withAutoID(true);
+            }
             builder.addFieldType(fieldBuilder.build());
         }
         R<RpcStatus> response = milvusClient.createCollection(builder.build());
-        return response.getStatus() != R.Status.Success.getCode();
+        return response.getStatus() == R.Status.Success.getCode();
     }
 
     public static void main(String[] args) {

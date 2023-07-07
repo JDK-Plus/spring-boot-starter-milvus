@@ -37,4 +37,14 @@ public @interface VectorTableColumn {
      * 字段描述
      */
     String desc() default "";
+
+    /**
+     * 指定向量维度,其他类型无需指定
+     */
+    int vectorDimension() default 1024;
+
+    /**
+     * varchar类型最大长度, 其他类型无需指定
+     */
+    int maxLength() default 500;
 }
