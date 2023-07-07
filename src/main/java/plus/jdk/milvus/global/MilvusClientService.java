@@ -11,6 +11,7 @@ import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DropIndexParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.springframework.beans.factory.BeanFactory;
@@ -200,12 +201,28 @@ public class MilvusClientService {
         return resultR.getData();
     }
 
-    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, SFunction<?, ?> column,
+
+
+    public <T extends VectorModel<?>> boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        DropIndexParam.Builder builder = DropIndexParam.newBuilder()
+                .withCollectionName(collectionDefinition.getName())
+                .withIndexName(indexName);
+        R<RpcStatus> resultR = milvusClient.dropIndex(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return true;
+    }
+
+    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column,
                                                           IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         CreateIndexParam.Builder builder = CreateIndexParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
-        builder.withFieldName(getColumnName(column));
+        String columnName = getColumnName(column);
+        builder.withFieldName(columnName);
+        builder.withIndexName(indexName);
         builder.withIndexType(indexType);
         builder.withMetricType(MetricType.L2);
         if(extraParam != null) {

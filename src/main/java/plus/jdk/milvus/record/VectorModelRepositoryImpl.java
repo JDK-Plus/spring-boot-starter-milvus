@@ -40,10 +40,15 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService.releaseCollection(clazz);
     }
 
-    public boolean createIndex(Class<T> clazz, SFunction<T, ?> column,
+    public boolean createIndex(Class<T> clazz, String indexName, SFunction<T, ?> column,
                                IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createIndex(clazz, column, indexType, metricType, extraParam);
+        return milvusClientService.createIndex(clazz, indexName, column, indexType, metricType, extraParam);
+    }
+
+    public boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.dropIndex(clazz, indexName);
     }
 
     public void dropCollection(Class<T> clazz) throws MilvusException {
