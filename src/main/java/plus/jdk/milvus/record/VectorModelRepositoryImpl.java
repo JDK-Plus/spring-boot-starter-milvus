@@ -1,6 +1,7 @@
 package plus.jdk.milvus.record;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import io.milvus.grpc.LoadState;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
@@ -34,6 +35,16 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService.loadCollection(clazz);
     }
 
+    public LoadState getLoadState(Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.getLoadState(clazz);
+    }
+
+    public Long getLoadProgress(Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.getLoadProgress(clazz);
+    }
+
 
     public void releaseCollection(Class<T> clazz) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
@@ -60,5 +71,4 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.hasCollection(clazz);
     }
-
 }

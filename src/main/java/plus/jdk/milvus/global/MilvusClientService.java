@@ -3,9 +3,7 @@ package plus.jdk.milvus.global;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.MutationResult;
-import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
@@ -178,7 +176,7 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         DropCollectionParam.Builder builder = DropCollectionParam.newBuilder()
                 .withCollectionName(collectionDefinition.getName());
-        if(!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+        if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
         }
         R<RpcStatus> resultR = milvusClient.dropCollection(builder.build());
@@ -191,7 +189,7 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         HasCollectionParam.Builder builder = HasCollectionParam.newBuilder()
                 .withCollectionName(collectionDefinition.getName());
-        if(!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+        if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
         }
         R<Boolean> resultR = milvusClient.hasCollection(builder.build());
@@ -200,7 +198,6 @@ public class MilvusClientService {
         }
         return resultR.getData();
     }
-
 
 
     public <T extends VectorModel<?>> boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
@@ -215,6 +212,31 @@ public class MilvusClientService {
         return true;
     }
 
+    public <T extends VectorModel<?>> LoadState getLoadState(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        GetLoadStateParam.Builder builder = GetLoadStateParam.newBuilder();
+        builder.withCollectionName(collectionDefinition.getName());
+        if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+            builder.withDatabaseName(collectionDefinition.getDatabase());
+        }
+        R<GetLoadStateResponse> resultR = milvusClient.getLoadState(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return resultR.getData().getState();
+    }
+
+    public <T extends VectorModel<?>> Long getLoadProgress(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        GetLoadingProgressParam.Builder builder = GetLoadingProgressParam.newBuilder();
+        builder.withCollectionName(collectionDefinition.getName());
+        R<GetLoadingProgressResponse> resultR = milvusClient.getLoadingProgress(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return resultR.getData().getProgress();
+    }
+
     public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column,
                                                           IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
@@ -225,7 +247,7 @@ public class MilvusClientService {
         builder.withIndexName(indexName);
         builder.withIndexType(indexType);
         builder.withMetricType(MetricType.L2);
-        if(extraParam != null) {
+        if (extraParam != null) {
             builder.withExtraParam(extraParam);
         }
         builder.withSyncMode(Boolean.FALSE);
