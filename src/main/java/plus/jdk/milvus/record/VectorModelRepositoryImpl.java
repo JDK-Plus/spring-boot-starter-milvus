@@ -12,6 +12,7 @@ import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.model.CollectionDefinition;
+import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.selector.MilvusSelector;
 
 import java.io.Serializable;
@@ -52,7 +53,7 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     }
 
     public boolean createIndex(Class<T> clazz, String indexName, SFunction<T, ?> column,
-                               IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
+                               IndexType indexType, MetricType metricType, IIndexExtra extraParam) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.createIndex(clazz, indexName, column, indexType, metricType, extraParam);
     }

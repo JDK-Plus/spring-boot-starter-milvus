@@ -49,4 +49,6 @@ public class CollectionColumnDefinition {
      * varchar类型最大长度, 其他类型不用指定
      */
     private Integer maxLength = 128;
+
+    private Boolean partitionKey = false;
 }

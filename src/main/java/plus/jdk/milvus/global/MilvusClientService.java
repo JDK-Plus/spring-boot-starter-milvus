@@ -3,6 +3,7 @@ package plus.jdk.milvus.global;
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.google.gson.Gson;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -24,6 +25,7 @@ import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.CollectionColumnDefinition;
 import plus.jdk.milvus.model.CollectionDefinition;
+import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
 
 import java.lang.reflect.Field;
@@ -44,9 +46,20 @@ public class MilvusClientService {
 
     private final Map<Class<?>, CollectionDefinition> tableDefinitionMap = new ConcurrentHashMap<>();
 
-    private String getColumnName(SFunction<?, ?> column) {
+    private String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
         LambdaMeta lambdaMeta = LambdaUtils.extract(column);
-        return PropertyNamer.methodToProperty(lambdaMeta.getImplMethodName());
+        String attributeName = PropertyNamer.methodToProperty(lambdaMeta.getImplMethodName());
+        Field field = null;
+        try{
+            field = clazz.getDeclaredField(attributeName);
+        }catch (Exception e) {
+            throw new MilvusException(String.format("unknown attributeName '%s'", attributeName));
+        }
+        VectorCollectionColumn vectorCollectionColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
+        if (vectorCollectionColumn == null) {
+            throw new MilvusException("table column must annotation with @VectorCollectionColumn");
+        }
+        return vectorCollectionColumn.name();
     }
 
     public MilvusClientService(MilvusPlusProperties properties,
@@ -79,7 +92,7 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = new CollectionDefinition();
         VectorCollectionName vectorCollectionName = clazz.getAnnotation(VectorCollectionName.class);
         if (vectorCollectionName == null) {
-            throw new MilvusException("table model must annotation with @VectorTableName");
+            throw new MilvusException("table model must annotation with @VectorCollectionName");
         }
         collectionDefinition.setDescription(vectorCollectionName.description());
         collectionDefinition.setName(vectorCollectionName.name());
@@ -90,7 +103,7 @@ public class MilvusClientService {
             ReflectionUtils.makeAccessible(field);
             VectorCollectionColumn tableColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
             if (tableColumn == null) {
-                throw new MilvusException("table column must annotation with @VectorTableField");
+                throw new MilvusException("table column must annotation with @VectorCollectionColumn");
             }
             String columnName = tableColumn.name();
             VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
@@ -101,6 +114,7 @@ public class MilvusClientService {
             columnDefinition.setDataType(tableColumn.dataType());
             columnDefinition.setVectorTypeHandler(vectorTypeHandler);
             columnDefinition.setField(field);
+            columnDefinition.setPartitionKey(tableColumn.partitionKey());
             columnDefinition.setVectorDimension(tableColumn.vectorDimension());
             columnDefinition.setMaxLength(tableColumn.maxLength());
             collectionDefinition.getColumns().add(columnDefinition);
@@ -238,17 +252,17 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column,
-                                                          IndexType indexType, MetricType metricType, String extraParam) throws MilvusException {
+                                                          IndexType indexType, MetricType metricType, IIndexExtra extra) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         CreateIndexParam.Builder builder = CreateIndexParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
-        String columnName = getColumnName(column);
+        String columnName = getColumnName(column, clazz);
         builder.withFieldName(columnName);
         builder.withIndexName(indexName);
         builder.withIndexType(indexType);
-        builder.withMetricType(MetricType.L2);
-        if (extraParam != null) {
-            builder.withExtraParam(extraParam);
+        builder.withMetricType(metricType);
+        if (extra != null) {
+            builder.withExtraParam(new Gson().toJson(extra));
         }
         builder.withSyncMode(Boolean.FALSE);
         R<RpcStatus> resultR = milvusClient.createIndex(builder.build());
@@ -267,6 +281,7 @@ public class MilvusClientService {
             FieldType.Builder fieldBuilder = FieldType.newBuilder();
             fieldBuilder.withName(column.getName());
             fieldBuilder.withDescription(column.getDesc());
+            fieldBuilder.withPartitionKey(column.getPartitionKey());
             fieldBuilder.withDataType(column.getDataType());
             fieldBuilder.withPrimaryKey(column.getPrimary());
             if (column.getDataType() == DataType.BinaryVector || column.getDataType() == DataType.FloatVector) {
@@ -277,6 +292,9 @@ public class MilvusClientService {
             }
             if (column.getPrimary()) {
                 fieldBuilder.withAutoID(true);
+            }
+            if(column.getDataType() == DataType.Int64 || column.getDataType() == DataType.VarChar) {
+                fieldBuilder.withPartitionKey(column.getPartitionKey());
             }
             builder.addFieldType(fieldBuilder.build());
         }
