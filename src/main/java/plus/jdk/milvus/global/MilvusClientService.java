@@ -12,6 +12,8 @@ import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
+import io.milvus.response.QueryResultsWrapper;
+import io.milvus.response.SearchResultsWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.springframework.beans.factory.BeanFactory;
@@ -314,8 +316,15 @@ public class MilvusClientService {
         return true;
     }
 
-    public <T extends VectorModel<?>> SearchResults search(Integer topK, LambdaSearchWrapper<T> wrapper, Class<T> clazz,
-                                                           ConsistencyLevelEnum consistencyLevel, IIndexExtra extra) throws MilvusException {
+    private  <T extends VectorModel<?>> T createInstance(Class<T> clazz) throws MilvusException {
+        try{
+            return clazz.newInstance();
+        }catch (Exception e) {
+            throw new MilvusException(e.getMessage());
+        }
+    }
+
+    public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
@@ -332,21 +341,36 @@ public class MilvusClientService {
         builder.withVectors(vectors);
         builder.withVectorFieldName(columnDefinition.getName());
         builder.withCollectionName(collectionDefinition.getName());
-        builder.withConsistencyLevel(consistencyLevel);
+        builder.withConsistencyLevel(wrapper.getConsistencyLevel());
         builder.withMetricType(columnDefinition.getMetricType());
         builder.withOutFields(outFields);
-        builder.withTopK(topK);
+        builder.withTopK(wrapper.getTopK());
         String expression = wrapper.buildExpression(clazz);
         if(!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
-        if(extra != null) {
-            builder.withParams(gson.toJson(extra));
+        if(wrapper.getExtra() != null) {
+            builder.withParams(gson.toJson(wrapper.getExtra()));
         }
         R<SearchResults> resultR = milvusClient.search(builder.build());
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
             throw new MilvusException(resultR.getException().getMessage());
         }
-        return resultR.getData();
+        SearchResultsWrapper resultsWrapper = new SearchResultsWrapper(resultR.getData().getResults());
+        List<T> resultRows = new ArrayList<>();
+        for(int i = 0; i < resultsWrapper.getRowRecords().size(); i ++) {
+            QueryResultsWrapper.RowRecord rowRecord = resultsWrapper.getRowRecords().get(i);
+            T data = this.createInstance(clazz);
+            for(String columnName:rowRecord.getFieldValues().keySet()) {
+                ColumnDefinition column = collectionDefinition.getColumnByColumnName(columnName);
+                if(column == null) {
+                    continue; // TODO: 此处需要后续再处理一下子分值和distance相关逻辑，看能不能按要求写回去
+                }
+                ReflectionUtils.makeAccessible(column.getField());
+                ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
+            }
+            resultRows.add(data);
+        }
+        return resultRows;
     }
 }

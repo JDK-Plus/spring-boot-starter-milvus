@@ -19,6 +19,7 @@ import plus.jdk.milvus.selector.MilvusSelector;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.io.Serializable;
+import java.util.List;
 
 public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
@@ -75,14 +76,8 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         return milvusClientService.hasCollection(clazz);
     }
 
-    public SearchResults search(LambdaSearchWrapper<T> wrapper, Class<T> clazz,
-                                ConsistencyLevelEnum consistencyLevel, Integer topK, IIndexExtra iIndexExtra) throws MilvusException {
+    public List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.search(topK, wrapper, clazz, consistencyLevel, iIndexExtra);
-    }
-
-    public SearchResults search(LambdaSearchWrapper<T> wrapper, Class<T> clazz, Integer topK) throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.search(topK, wrapper, clazz, ConsistencyLevelEnum.STRONG, null);
+        return milvusClientService.search(wrapper, clazz);
     }
 }
