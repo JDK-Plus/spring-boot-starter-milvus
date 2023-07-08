@@ -1,21 +1,12 @@
 package plus.jdk.milvus.record;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.LoadState;
-import io.milvus.grpc.SearchResults;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.HasCollectionParam;
-import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.global.MilvusClientService;
-import plus.jdk.milvus.model.CollectionDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.selector.MilvusSelector;
+import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.io.Serializable;
@@ -28,6 +19,11 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     public boolean insert(T vectorModel) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.insert(vectorModel);
+    }
+
+    public boolean remove(Object pk, Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.remove(pk, clazz);
     }
 
     public boolean createCollection(Class<T> clazz) throws MilvusException {

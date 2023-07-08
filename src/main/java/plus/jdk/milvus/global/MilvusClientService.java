@@ -8,6 +8,7 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
@@ -25,12 +26,14 @@ import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
 import plus.jdk.milvus.annotation.VectorCollectionName;
 import plus.jdk.milvus.common.MilvusException;
+import plus.jdk.milvus.common.Operator;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.ColumnDefinition;
 import plus.jdk.milvus.model.CollectionDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.WrapperModel;
 import plus.jdk.milvus.record.VectorModel;
+import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.lang.reflect.Field;
@@ -133,10 +136,21 @@ public class MilvusClientService {
         return collectionDefinition;
     }
 
-    public R<SearchResults> search(VectorModel<?> object) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(object.getClass());
-        SearchParam.Builder builder = SearchParam.newBuilder();
-        return milvusClient.search(builder.build());
+    public <T extends VectorModel<?>> boolean remove(Object pk, Class<T> clazz) throws MilvusException {
+        CollectionDefinition collection = getTableDefinition(clazz);
+        String columnName = collection.getPrimaryColumn().getName();
+        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk});
+        if(StringUtils.isEmpty(expression)) {
+            throw new MilvusException("expression is null");
+        }
+        DeleteParam.Builder builder = DeleteParam.newBuilder()
+                .withCollectionName(collection.getName())
+                .withExpr(expression);
+        R<MutationResult> resultR = milvusClient.delete(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return true;
     }
 
 

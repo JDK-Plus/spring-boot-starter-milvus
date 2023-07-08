@@ -119,6 +119,11 @@ public class AbstractLambdaWrapper<T extends VectorModel<?>> {
         return this;
     }
 
+    public <R> AbstractLambdaWrapper<T> in(SFunction<T, R> column, R ...values) {
+        this.wrapperModels.add(new WrapperModel<>(column, Operator.in, values));
+        return this;
+    }
+
     public String buildExpression(Class<T> clazz) throws MilvusException {
         List<String> results = new ArrayList<>();
         for(WrapperModel<T> wrapperModel: wrapperModels) {

@@ -1,5 +1,6 @@
 package plus.jdk.milvus.model;
 
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.grpc.DataType;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
@@ -35,6 +36,11 @@ public class ColumnDefinition {
      * 字段描述
      */
     private String desc;
+
+    /**
+     *
+     */
+    private SFunction<?, ?> column;
 
 
     /**

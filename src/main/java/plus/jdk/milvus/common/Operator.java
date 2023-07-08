@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import plus.jdk.milvus.common.operator.IOperatorComputer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 public enum Operator {
@@ -19,6 +23,13 @@ public enum Operator {
     or((leftValue, rightValue) -> " or "),
     lbracket((leftValue, rightValue) -> "("),
     rbracket((leftValue, rightValue) -> ")"),
+    in((leftValue, rightValue) -> {
+        List<String> params = new ArrayList<>();
+        for(Object object: (Object[]) rightValue) {
+            params.add(object.toString());
+        }
+        return String.format("%s in [%s]" , leftValue, String.join(",", params));
+    }),
     ;
     /**
      * 回调
