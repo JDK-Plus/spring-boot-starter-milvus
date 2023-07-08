@@ -17,28 +17,15 @@ import plus.jdk.milvus.record.VectorModel;
 import plus.jdk.milvus.selector.MilvusSelector;
 
 /**
- * 向量相似性检索
- * <a href="https://milvus.io/docs/boolean.md">...</a>
+ * <a href="https://milvus.io/docs/boolean.md">向量相似性检索</a>
  */
-public class AbstractLambdaWrapper<T extends VectorModel<?>> {
+public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
 
     /**
      * 普通的查询参数
      */
     @Getter
     private final List<WrapperModel<T>> wrapperModels = new ArrayList<>();
-
-    /**
-     * 指定要检索的向量列
-     */
-    @Getter
-    private SFunction<T, ?> vectorColumn;
-
-    /**
-     * 指定输入向量
-     */
-    @Getter
-    private List<?> vectorValue;
 
     /**
      * 查询中使用的一致性等级
@@ -51,12 +38,6 @@ public class AbstractLambdaWrapper<T extends VectorModel<?>> {
     protected String getTableColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
         MilvusClientService milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.getColumnName(column, clazz);
-    }
-
-    public <R> AbstractLambdaWrapper<T> vector(SFunction<T, R> column, R value) {
-        this.vectorColumn = column;
-        this.vectorValue = (List<?>) value;
-        return this;
     }
 
     public <R> AbstractLambdaWrapper<T> eq(SFunction<T, R> column, R value) {

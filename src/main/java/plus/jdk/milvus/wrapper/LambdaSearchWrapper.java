@@ -1,10 +1,14 @@
 package plus.jdk.milvus.wrapper;
 
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
+
+import java.util.List;
 
 
 @Data
@@ -23,4 +27,23 @@ public class LambdaSearchWrapper<T extends VectorModel<?>> extends AbstractLambd
      * Number of the most similar results to return.
      */
     private Integer topK = 10;
+
+
+    /**
+     * 指定要检索的向量列
+     */
+    @Getter
+    private SFunction<T, ?> vectorColumn;
+
+    /**
+     * 指定输入向量
+     */
+    @Getter
+    private List<?> vectorValue;
+
+    public <R> AbstractLambdaWrapper<T> vector(SFunction<T, R> column, R value) {
+        this.vectorColumn = column;
+        this.vectorValue = (List<?>) value;
+        return this;
+    }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public enum Operator {
-    ne((leftValue, rightValue) -> String.format("%s != %s", leftValue, rightValue)),
+    ne((leftValue, rightValue) -> String.format("%s !== %s", leftValue, rightValue)),
     eq((leftValue, rightValue) -> String.format("%s == %s", leftValue, rightValue)),
     gt((leftValue, rightValue) -> String.format("%s > %s", leftValue, rightValue)),
     ge((leftValue, rightValue) -> String.format("%s >= %s", leftValue, rightValue)),

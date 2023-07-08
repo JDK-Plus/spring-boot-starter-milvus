@@ -76,4 +76,9 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.search(wrapper, clazz);
     }
+
+    public List<T> query(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.query(wrapper, clazz);
+    }
 }

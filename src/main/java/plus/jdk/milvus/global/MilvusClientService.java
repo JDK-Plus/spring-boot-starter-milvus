@@ -10,6 +10,7 @@ import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
@@ -387,4 +388,52 @@ public class MilvusClientService {
         }
         return resultRows;
     }
+
+
+    public <T extends VectorModel<?>> List<T> query(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        List<String> outFields = new ArrayList<>();
+        for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
+            if(columnDefinition.vectorColumn()) {
+                continue;
+            }
+            outFields.add(columnDefinition.getName());
+        }
+        QueryParam.Builder builder = QueryParam.newBuilder();
+        builder.withCollectionName(collectionDefinition.getName());
+        builder.withConsistencyLevel(wrapper.getConsistencyLevel());
+        builder.withOutFields(outFields);
+        if(wrapper.getLimit() != null) {
+            builder.withLimit(wrapper.getLimit());
+        }
+        if(wrapper.getOffset() != null) {
+            builder.withOffset(wrapper.getOffset());
+        }
+        String expression = wrapper.buildExpression(clazz);
+        if(!StringUtils.isEmpty(expression)) {
+            builder.withExpr(expression);
+        }
+        R<QueryResults> resultR = milvusClient.query(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        QueryResultsWrapper resultsWrapper = new QueryResultsWrapper(resultR.getData());
+        List<T> resultRows = new ArrayList<>();
+        for(int i = 0; i < resultsWrapper.getRowRecords().size(); i ++) {
+            QueryResultsWrapper.RowRecord rowRecord = resultsWrapper.getRowRecords().get(i);
+            T data = this.createInstance(clazz);
+            for(String columnName:rowRecord.getFieldValues().keySet()) {
+                ColumnDefinition column = collectionDefinition.getColumnByColumnName(columnName);
+                if(column == null) {
+                    continue;
+                }
+                ReflectionUtils.makeAccessible(column.getField());
+                ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
+            }
+            resultRows.add(data);
+        }
+        return resultRows;
+    }
+
+
 }
