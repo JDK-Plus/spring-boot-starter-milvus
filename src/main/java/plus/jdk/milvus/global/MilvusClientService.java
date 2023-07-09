@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import io.milvus.client.MilvusServiceClient;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
@@ -40,6 +41,7 @@ import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -76,15 +78,44 @@ public class MilvusClientService {
     public MilvusClientService(MilvusPlusProperties properties,
                                BeanFactory beanFactory,
                                ApplicationContext applicationContext) {
-        ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost(properties.getHost())
-                .withPort(properties.getPort())
-                .withAuthorization(properties.getUserName(), properties.getPassword())
-                .build();
+        ConnectParam.Builder builder = ConnectParam.newBuilder();
+        if(properties.getHost() != null) {
+            builder.withHost(properties.getHost());
+        }
+        if(properties.getPort() != null) {
+            builder.withPort(properties.getPort());
+        }
+        if(properties.getUserName() != null) {
+            builder.withAuthorization(properties.getUserName(), properties.getPassword());
+        }
+        if(properties.getConnectUri() != null) {
+            builder.withUri(properties.getConnectUri());
+        }
+        if(properties.getConnectTimeout() != null) {
+            builder.withConnectTimeout(properties.getConnectTimeout(), TimeUnit.MILLISECONDS);
+        }
+        if(properties.getRpcDeadline() != null) {
+            builder.withRpcDeadline(properties.getRpcDeadline(), TimeUnit.MILLISECONDS);
+        }
+        if(properties.getDatabase() != null) {
+            builder.withDatabaseName(properties.getDatabase());
+        }
+        if(properties.getSecure() != null) {
+            builder.withSecure(properties.getSecure());
+        }
+        if(properties.getKeepAliveTime() != null) {
+            builder.withKeepAliveTime(properties.getKeepAliveTime(), TimeUnit.MILLISECONDS);
+        }
+        if(properties.getIdleTimeout() != null) {
+            builder.withIdleTimeout(properties.getIdleTimeout(), TimeUnit.MILLISECONDS);
+        }
+        if(properties.getToken() != null) {
+            builder.withToken(properties.getToken());
+        }
         this.properties = properties;
         this.beanFactory = beanFactory;
         this.applicationContext = applicationContext;
-        this.milvusClient = new MilvusServiceClient(connectParam);
+        this.milvusClient = new MilvusServiceClient(builder.build());
     }
 
     protected List<Field> getDeclaredFields(Class<?> clazz, List<Field> fields) {
@@ -364,6 +395,18 @@ public class MilvusClientService {
         if(!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
+        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+            builder.withPartitionNames(wrapper.getPartitionNames());
+        }
+        if(wrapper.getTravelTimestamp() != null) {
+            builder.withTravelTimestamp(wrapper.getTravelTimestamp());
+        }
+        if(wrapper.getGracefulTime() != null) {
+            builder.withGracefulTime(wrapper.getGracefulTime());
+        }
+        if(wrapper.getIgnoreGrowing() != null) {
+            builder.withGracefulTime(wrapper.getIgnoreGrowing());
+        }
         if(wrapper.getExtra() != null) {
             builder.withParams(gson.toJson(wrapper.getExtra()));
         }
@@ -400,6 +443,21 @@ public class MilvusClientService {
             outFields.add(columnDefinition.getName());
         }
         QueryParam.Builder builder = QueryParam.newBuilder();
+        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+            builder.withPartitionNames(wrapper.getPartitionNames());
+        }
+        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+            builder.withPartitionNames(wrapper.getPartitionNames());
+        }
+        if(wrapper.getTravelTimestamp() != null) {
+            builder.withTravelTimestamp(wrapper.getTravelTimestamp());
+        }
+        if(wrapper.getGracefulTime() != null) {
+            builder.withGracefulTime(wrapper.getGracefulTime());
+        }
+        if(wrapper.getIgnoreGrowing() != null) {
+            builder.withGracefulTime(wrapper.getIgnoreGrowing());
+        }
         builder.withCollectionName(collectionDefinition.getName());
         builder.withConsistencyLevel(wrapper.getConsistencyLevel());
         builder.withOutFields(outFields);

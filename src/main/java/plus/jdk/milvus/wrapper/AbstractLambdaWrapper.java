@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,21 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
     @Setter
     private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.STRONG;
 
+    @Getter
+    @Setter
+    private List<String> partitionNames = new ArrayList<>();
+
+    @Getter
+    @Setter
+    private Long travelTimestamp;
+
+    @Getter
+    @Setter
+    private Long gracefulTime;
+
+    @Getter
+    @Setter
+    private Long ignoreGrowing;
 
     protected String getTableColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
         MilvusClientService milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
@@ -107,6 +123,6 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
             String columnName = getTableColumnName(wrapperModel.getColumn(), clazz);
             results.add(operator.getIOperatorComputer().compute(columnName, wrapperModel.getValue(), clazz));
         }
-        return String.join(" ", results);
+        return String.join(" and ", results);
     }
 }

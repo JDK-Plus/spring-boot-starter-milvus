@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.support.WebApplicationObjectSupport;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import plus.jdk.milvus.config.MilvusPlusProperties;
-import plus.jdk.milvus.global.DefaultEmbeddingTypeHandler;
+import plus.jdk.milvus.global.TypeHandlerRegistry;
+import plus.jdk.milvus.global.handler.UnknownTypeHandler;
 import plus.jdk.milvus.global.MilvusClientService;
 
 @Configuration
@@ -22,12 +23,17 @@ public class MilvusSelector extends WebApplicationObjectSupport implements BeanF
     }
 
     @Bean
-    public DefaultEmbeddingTypeHandler getDefaultEmbeddingTypeHandler() {
-        return new DefaultEmbeddingTypeHandler();
+    public UnknownTypeHandler getDefaultEmbeddingTypeHandler() {
+        return new UnknownTypeHandler();
     }
 
     @Bean
     public MilvusClientService getMilvusClientService(MilvusPlusProperties properties) {
         return new MilvusClientService(properties, beanFactory, getApplicationContext());
+    }
+
+    @Bean
+    public TypeHandlerRegistry TypeHandlerRegistry(MilvusPlusProperties properties) {
+        return new TypeHandlerRegistry(properties, beanFactory, getApplicationContext());
     }
 }

@@ -1,3 +1,16 @@
+Milvus 2.0 是一款云原生向量数据库，采用存储与计算分离的架构设计。该重构版本的所有组件均为无状态组件，极大地增强了系统弹性和灵活性。更多系统架构细节，参考 [Milvus 系统架构](https://milvus.io/cn/docs/architecture_overview.md)。
+
+Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/master/LICENSE) 协议发布，于 2019 年 10 月正式开源，是 [LF AI & Data 基金会](https://lfaidata.foundation/) 的毕业项目。
+
+
+<h3 align="center">一个java风格的Milvus操作库</h3>
+<p align="center">
+    <a href="https://github.com/JDK-Plus/spring-boot-starter-milvus/blob/master/LICENSE"><img src="https://img.shields.io/github/license/JDK-Plus/spring-boot-starter-milvus.svg" /></a>
+    <a href="https://github.com/JDK-Plus/spring-boot-starter-milvus/releases"><img src="https://img.shields.io/github/release/JDK-Plus/spring-boot-starter-milvus.svg" /></a>
+    <a href="https://github.com/JDK-Plus/spring-boot-starter-milvus/stargazers"><img src="https://img.shields.io/github/stars/JDK-Plus/spring-boot-starter-milvus.svg" /></a>
+    <a href="https://github.com/JDK-Plus/spring-boot-starter-milvus/network/members"><img src="https://img.shields.io/github/forks/JDK-Plus/spring-boot-starter-milvus.svg" /></a>
+</p>
+该组件是一个仿照mybatis-plus风格编写的Milvus组件， 可以让你像使用mysql那样使用java来操作Milvus，执行精确的query查询或者使用向量执行相似性查询。
 
 ### 一、如何引入
 
@@ -5,7 +18,7 @@
 <dependency>
     <groupId>plus.jdk</groupId>
     <artifactId>spring-boot-starter-milvus</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
@@ -152,6 +165,7 @@ class UserBlogVectorServiceTest {
         ChatGlmEmbeddingResult result = aigcApiService.chatGlmEmbedding(text, uid);
         wrapper.vector(UserBlogVector::getBlogTextVector, result.getEmbeddings());
         wrapper.setTopK(10);
+        wrapper.eq(UserBlogVector::getUid, 123456L);
         List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper, UserBlogVector.class);
         log.info("{}", searchResults);
     }

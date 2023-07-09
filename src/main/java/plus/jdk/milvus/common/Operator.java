@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import plus.jdk.milvus.common.operator.CompareOperatorComputer;
 import plus.jdk.milvus.common.operator.IOperatorComputer;
+import plus.jdk.milvus.common.operator.InOperatorComputer;
 import plus.jdk.milvus.common.operator.LogicOperatorComputer;
 import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
 
@@ -25,13 +26,7 @@ public enum Operator {
     and(new LogicOperatorComputer("and")),
     or(new LogicOperatorComputer("or")),
     not(new LogicOperatorComputer("not")),
-    in((leftValue, rightValue, clazz) -> {
-        List<String> params = new ArrayList<>();
-        for (Object object : (Object[]) rightValue) {
-            params.add(object.toString());
-        }
-        return String.format("%s in [%s]", leftValue, String.join(",", params));
-    }),
+    in(new InOperatorComputer()),
     ;
     /**
      * 回调

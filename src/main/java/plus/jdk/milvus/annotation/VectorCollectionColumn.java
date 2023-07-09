@@ -3,7 +3,7 @@ package plus.jdk.milvus.annotation;
 import io.milvus.grpc.DataType;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
-import plus.jdk.milvus.global.DefaultEmbeddingTypeHandler;
+import plus.jdk.milvus.global.handler.UnknownTypeHandler;
 import plus.jdk.milvus.global.VectorTypeHandler;
 
 import java.lang.annotation.ElementType;
@@ -33,7 +33,7 @@ public @interface VectorCollectionColumn {
     /**
      * 数据向量化处理的handler
      */
-    Class<? extends VectorTypeHandler<?, ?>> EmbeddingTypeHandler() default DefaultEmbeddingTypeHandler.class;
+    Class<? extends VectorTypeHandler<?, ?>> EmbeddingTypeHandler() default UnknownTypeHandler.class;
 
     /**
      * 字段描述

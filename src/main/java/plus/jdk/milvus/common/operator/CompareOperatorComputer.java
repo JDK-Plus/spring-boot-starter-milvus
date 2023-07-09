@@ -10,6 +10,6 @@ public class CompareOperatorComputer implements IOperatorComputer {
 
     @Override
     public String compute(String leftValue, Object rightValue, Class<?> clazz) throws MilvusException {
-        return String.format("%s %s %s", leftValue, operator, rightValue);
+        return String.format("%s %s %s", leftValue, operator, this.formatRvalue(rightValue));
     }
 }
