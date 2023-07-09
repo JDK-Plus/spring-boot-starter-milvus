@@ -140,7 +140,7 @@ public class MilvusClientService {
     public <T extends VectorModel<?>> boolean remove(Object pk, Class<T> clazz) throws MilvusException {
         CollectionDefinition collection = getTableDefinition(clazz);
         String columnName = collection.getPrimaryColumn().getName();
-        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk});
+        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk}, clazz);
         if(StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }

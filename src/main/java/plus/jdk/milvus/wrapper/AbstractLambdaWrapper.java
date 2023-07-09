@@ -80,23 +80,18 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
         return this;
     }
 
-    public AbstractLambdaWrapper<T> and() {
-        this.wrapperModels.add(new WrapperModel<>(null, Operator.and, null));
+    public AbstractLambdaWrapper<T> and(AbstractLambdaWrapper<T> ...wrappers) {
+        this.wrapperModels.add(new WrapperModel<>(null, Operator.and, wrappers));
         return this;
     }
 
-    public AbstractLambdaWrapper<T> or() {
-        this.wrapperModels.add(new WrapperModel<>(null, Operator.or, null));
+    public AbstractLambdaWrapper<T> or(AbstractLambdaWrapper<T> ...wrappers) {
+        this.wrapperModels.add(new WrapperModel<>(null, Operator.or, wrappers));
         return this;
     }
 
-    public AbstractLambdaWrapper<T> lbracket() {
-        this.wrapperModels.add(new WrapperModel<>(null, Operator.lbracket, null));
-        return this;
-    }
-
-    public AbstractLambdaWrapper<T> rbracket() {
-        this.wrapperModels.add(new WrapperModel<>(null, Operator.rbracket, null));
+    public AbstractLambdaWrapper<T> not(AbstractLambdaWrapper<T> ...wrappers) {
+        this.wrapperModels.add(new WrapperModel<>(null, Operator.not, wrappers));
         return this;
     }
 
@@ -105,12 +100,12 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
         return this;
     }
 
-    public String buildExpression(Class<T> clazz) throws MilvusException {
+    public String buildExpression(Class<?> clazz) throws MilvusException {
         List<String> results = new ArrayList<>();
         for(WrapperModel<T> wrapperModel: wrapperModels) {
             Operator operator = wrapperModel.getOperator();
             String columnName = getTableColumnName(wrapperModel.getColumn(), clazz);
-            results.add(operator.getIOperatorComputer().compute(columnName, wrapperModel.getValue()));
+            results.add(operator.getIOperatorComputer().compute(columnName, wrapperModel.getValue(), clazz));
         }
         return String.join(" ", results);
     }

@@ -1,7 +1,6 @@
 package plus.jdk.milvus.wrapper;
 
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
