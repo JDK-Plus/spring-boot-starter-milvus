@@ -75,41 +75,39 @@ public class MilvusClientService {
         return vectorCollectionColumn.name();
     }
 
-    public MilvusClientService(MilvusPlusProperties properties,
-                               BeanFactory beanFactory,
-                               ApplicationContext applicationContext) {
+    public MilvusClientService(MilvusPlusProperties properties, BeanFactory beanFactory, ApplicationContext applicationContext) {
         ConnectParam.Builder builder = ConnectParam.newBuilder();
-        if(properties.getHost() != null) {
+        if (properties.getHost() != null) {
             builder.withHost(properties.getHost());
         }
-        if(properties.getPort() != null) {
+        if (properties.getPort() != null) {
             builder.withPort(properties.getPort());
         }
-        if(properties.getUserName() != null) {
+        if (properties.getUserName() != null) {
             builder.withAuthorization(properties.getUserName(), properties.getPassword());
         }
-        if(properties.getConnectUri() != null) {
+        if (properties.getConnectUri() != null) {
             builder.withUri(properties.getConnectUri());
         }
-        if(properties.getConnectTimeout() != null) {
+        if (properties.getConnectTimeout() != null) {
             builder.withConnectTimeout(properties.getConnectTimeout(), TimeUnit.MILLISECONDS);
         }
-        if(properties.getRpcDeadline() != null) {
+        if (properties.getRpcDeadline() != null) {
             builder.withRpcDeadline(properties.getRpcDeadline(), TimeUnit.MILLISECONDS);
         }
-        if(properties.getDatabase() != null) {
+        if (properties.getDatabase() != null) {
             builder.withDatabaseName(properties.getDatabase());
         }
-        if(properties.getSecure() != null) {
+        if (properties.getSecure() != null) {
             builder.withSecure(properties.getSecure());
         }
-        if(properties.getKeepAliveTime() != null) {
+        if (properties.getKeepAliveTime() != null) {
             builder.withKeepAliveTime(properties.getKeepAliveTime(), TimeUnit.MILLISECONDS);
         }
-        if(properties.getIdleTimeout() != null) {
+        if (properties.getIdleTimeout() != null) {
             builder.withIdleTimeout(properties.getIdleTimeout(), TimeUnit.MILLISECONDS);
         }
-        if(properties.getToken() != null) {
+        if (properties.getToken() != null) {
             builder.withToken(properties.getToken());
         }
         this.properties = properties;
@@ -145,7 +143,7 @@ public class MilvusClientService {
             ReflectionUtils.makeAccessible(field);
             VectorCollectionColumn tableColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
             if (tableColumn == null) {
-                throw new MilvusException("table column must annotation with @VectorCollectionColumn");
+                continue;
             }
             String columnName = tableColumn.name();
             VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
@@ -172,12 +170,10 @@ public class MilvusClientService {
         CollectionDefinition collection = getTableDefinition(clazz);
         String columnName = collection.getPrimaryColumn().getName();
         String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk}, clazz);
-        if(StringUtils.isEmpty(expression)) {
+        if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
-        DeleteParam.Builder builder = DeleteParam.newBuilder()
-                .withCollectionName(collection.getName())
-                .withExpr(expression);
+        DeleteParam.Builder builder = DeleteParam.newBuilder().withCollectionName(collection.getName()).withExpr(expression);
         R<MutationResult> resultR = milvusClient.delete(builder.build());
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
             throw new MilvusException(resultR.getException().getMessage());
@@ -235,17 +231,12 @@ public class MilvusClientService {
 
     public <T extends VectorModel<?>> void releaseCollection(Class<T> clazz) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
-        milvusClient.releaseCollection(
-                ReleaseCollectionParam.newBuilder()
-                        .withCollectionName(collectionDefinition.getName())
-                        .build()
-        );
+        milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName()).build());
     }
 
     public <T extends VectorModel<?>> void dropCollection(Class<T> clazz) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
-        DropCollectionParam.Builder builder = DropCollectionParam.newBuilder()
-                .withCollectionName(collectionDefinition.getName());
+        DropCollectionParam.Builder builder = DropCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
         }
@@ -257,8 +248,7 @@ public class MilvusClientService {
 
     public <T extends VectorModel<?>> boolean hasCollection(Class<T> clazz) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
-        HasCollectionParam.Builder builder = HasCollectionParam.newBuilder()
-                .withCollectionName(collectionDefinition.getName());
+        HasCollectionParam.Builder builder = HasCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
         }
@@ -272,9 +262,7 @@ public class MilvusClientService {
 
     public <T extends VectorModel<?>> boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
-        DropIndexParam.Builder builder = DropIndexParam.newBuilder()
-                .withCollectionName(collectionDefinition.getName())
-                .withIndexName(indexName);
+        DropIndexParam.Builder builder = DropIndexParam.newBuilder().withCollectionName(collectionDefinition.getName()).withIndexName(indexName);
         R<RpcStatus> resultR = milvusClient.dropIndex(builder.build());
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
             throw new MilvusException(resultR.getException().getMessage());
@@ -307,8 +295,7 @@ public class MilvusClientService {
         return resultR.getData().getProgress();
     }
 
-    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName,
-                                                          SFunction<?, ?> column, IIndexExtra extra) throws MilvusException {
+    public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column, IIndexExtra extra) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         CreateIndexParam.Builder builder = CreateIndexParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
@@ -362,10 +349,10 @@ public class MilvusClientService {
         return true;
     }
 
-    private  <T extends VectorModel<?>> T createInstance(Class<T> clazz) throws MilvusException {
-        try{
+    private <T extends VectorModel<?>> T createInstance(Class<T> clazz) throws MilvusException {
+        try {
             return clazz.newInstance();
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new MilvusException(e.getMessage());
         }
     }
@@ -374,7 +361,7 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
-            if(columnDefinition.vectorColumn()) {
+            if (columnDefinition.vectorColumn()) {
                 continue;
             }
             outFields.add(columnDefinition.getName());
@@ -392,22 +379,22 @@ public class MilvusClientService {
         builder.withOutFields(outFields);
         builder.withTopK(wrapper.getTopK());
         String expression = wrapper.buildExpression(clazz);
-        if(!StringUtils.isEmpty(expression)) {
+        if (!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
-        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+        if (!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
             builder.withPartitionNames(wrapper.getPartitionNames());
         }
-        if(wrapper.getTravelTimestamp() != null) {
+        if (wrapper.getTravelTimestamp() != null) {
             builder.withTravelTimestamp(wrapper.getTravelTimestamp());
         }
-        if(wrapper.getGracefulTime() != null) {
+        if (wrapper.getGracefulTime() != null) {
             builder.withGracefulTime(wrapper.getGracefulTime());
         }
-        if(wrapper.getIgnoreGrowing() != null) {
+        if (wrapper.getIgnoreGrowing() != null) {
             builder.withGracefulTime(wrapper.getIgnoreGrowing());
         }
-        if(wrapper.getExtra() != null) {
+        if (wrapper.getExtra() != null) {
             builder.withParams(gson.toJson(wrapper.getExtra()));
         }
         R<SearchResults> resultR = milvusClient.search(builder.build());
@@ -416,13 +403,17 @@ public class MilvusClientService {
         }
         SearchResultsWrapper resultsWrapper = new SearchResultsWrapper(resultR.getData().getResults());
         List<T> resultRows = new ArrayList<>();
-        for(int i = 0; i < resultsWrapper.getRowRecords().size(); i ++) {
+        for (int i = 0; i < resultsWrapper.getRowRecords().size(); i++) {
             QueryResultsWrapper.RowRecord rowRecord = resultsWrapper.getRowRecords().get(i);
             T data = this.createInstance(clazz);
-            for(String columnName:rowRecord.getFieldValues().keySet()) {
+            Object distance = rowRecord.get("distance");
+            if (distance instanceof Float) {
+                data.setDistance((Float) rowRecord.get("distance"));
+            }
+            for (String columnName : rowRecord.getFieldValues().keySet()) {
                 ColumnDefinition column = collectionDefinition.getColumnByColumnName(columnName);
-                if(column == null) {
-                    continue; // TODO: 此处需要后续再处理一下子分值和distance相关逻辑，看能不能按要求写回去
+                if (column == null) {
+                    continue;
                 }
                 ReflectionUtils.makeAccessible(column.getField());
                 ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
@@ -437,38 +428,38 @@ public class MilvusClientService {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
-            if(columnDefinition.vectorColumn()) {
+            if (columnDefinition.vectorColumn()) {
                 continue;
             }
             outFields.add(columnDefinition.getName());
         }
         QueryParam.Builder builder = QueryParam.newBuilder();
-        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+        if (!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
             builder.withPartitionNames(wrapper.getPartitionNames());
         }
-        if(!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
+        if (!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
             builder.withPartitionNames(wrapper.getPartitionNames());
         }
-        if(wrapper.getTravelTimestamp() != null) {
+        if (wrapper.getTravelTimestamp() != null) {
             builder.withTravelTimestamp(wrapper.getTravelTimestamp());
         }
-        if(wrapper.getGracefulTime() != null) {
+        if (wrapper.getGracefulTime() != null) {
             builder.withGracefulTime(wrapper.getGracefulTime());
         }
-        if(wrapper.getIgnoreGrowing() != null) {
+        if (wrapper.getIgnoreGrowing() != null) {
             builder.withGracefulTime(wrapper.getIgnoreGrowing());
         }
         builder.withCollectionName(collectionDefinition.getName());
         builder.withConsistencyLevel(wrapper.getConsistencyLevel());
         builder.withOutFields(outFields);
-        if(wrapper.getLimit() != null) {
+        if (wrapper.getLimit() != null) {
             builder.withLimit(wrapper.getLimit());
         }
-        if(wrapper.getOffset() != null) {
+        if (wrapper.getOffset() != null) {
             builder.withOffset(wrapper.getOffset());
         }
         String expression = wrapper.buildExpression(clazz);
-        if(!StringUtils.isEmpty(expression)) {
+        if (!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
         R<QueryResults> resultR = milvusClient.query(builder.build());
@@ -477,12 +468,12 @@ public class MilvusClientService {
         }
         QueryResultsWrapper resultsWrapper = new QueryResultsWrapper(resultR.getData());
         List<T> resultRows = new ArrayList<>();
-        for(int i = 0; i < resultsWrapper.getRowRecords().size(); i ++) {
+        for (int i = 0; i < resultsWrapper.getRowRecords().size(); i++) {
             QueryResultsWrapper.RowRecord rowRecord = resultsWrapper.getRowRecords().get(i);
             T data = this.createInstance(clazz);
-            for(String columnName:rowRecord.getFieldValues().keySet()) {
+            for (String columnName : rowRecord.getFieldValues().keySet()) {
                 ColumnDefinition column = collectionDefinition.getColumnByColumnName(columnName);
-                if(column == null) {
+                if (column == null) {
                     continue;
                 }
                 ReflectionUtils.makeAccessible(column.getField());
