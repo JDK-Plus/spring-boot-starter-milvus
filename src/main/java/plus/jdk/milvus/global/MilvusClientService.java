@@ -181,6 +181,20 @@ public class MilvusClientService {
         return true;
     }
 
+    public <T extends VectorModel<?>> boolean batchRemove(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+        CollectionDefinition collection = getTableDefinition(clazz);
+        String expression = wrapper.buildExpression(clazz);
+        if (StringUtils.isEmpty(expression)) {
+            throw new MilvusException("expression is null");
+        }
+        DeleteParam.Builder builder = DeleteParam.newBuilder().withCollectionName(collection.getName()).withExpr(expression);
+        R<MutationResult> resultR = milvusClient.delete(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return true;
+    }
+
 
     public <T extends VectorModel<?>> Boolean insert(T vectorModel) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(vectorModel.getClass());

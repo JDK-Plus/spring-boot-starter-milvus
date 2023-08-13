@@ -26,6 +26,11 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         return milvusClientService.remove(pk, clazz);
     }
 
+    public boolean batchRemove(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.batchRemove(wrapper, clazz);
+    }
+
     public boolean createCollection(Class<T> clazz) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.createCollection(clazz);
