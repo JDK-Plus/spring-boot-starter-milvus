@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -20,7 +23,7 @@ import plus.jdk.milvus.selector.MilvusSelector;
 /**
  * <a href="https://milvus.io/docs/boolean.md">向量相似性检索</a>
  */
-public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
+public abstract class AbstractLambdaWrapper<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
     /**
      * 普通的查询参数
@@ -41,15 +44,22 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<?>> {
 
     @Getter
     @Setter
+    @Deprecated
     private Long travelTimestamp;
 
     @Getter
     @Setter
+    @Deprecated
     private Long gracefulTime;
 
     @Getter
     @Setter
+    @Deprecated
     private Long ignoreGrowing;
+
+    @Getter
+    @Setter
+    protected Class<T> entityType;
 
     protected String getTableColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
         MilvusClientService milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);

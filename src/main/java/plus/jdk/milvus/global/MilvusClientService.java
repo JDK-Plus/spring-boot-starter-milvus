@@ -181,9 +181,9 @@ public class MilvusClientService {
         return true;
     }
 
-    public <T extends VectorModel<?>> boolean batchRemove(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
-        CollectionDefinition collection = getTableDefinition(clazz);
-        String expression = wrapper.buildExpression(clazz);
+    public <T extends VectorModel<?>> boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
+        CollectionDefinition collection = getTableDefinition(wrapper.getEntityType());
+        String expression = wrapper.buildExpression(wrapper.getEntityType());
         if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
@@ -371,6 +371,10 @@ public class MilvusClientService {
         }
     }
 
+    public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper) throws MilvusException {
+        return this.search(wrapper, wrapper.getEntityType());
+    }
+
     public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
@@ -398,15 +402,6 @@ public class MilvusClientService {
         }
         if (!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
             builder.withPartitionNames(wrapper.getPartitionNames());
-        }
-        if (wrapper.getTravelTimestamp() != null) {
-            builder.withTravelTimestamp(wrapper.getTravelTimestamp());
-        }
-        if (wrapper.getGracefulTime() != null) {
-            builder.withGracefulTime(wrapper.getGracefulTime());
-        }
-        if (wrapper.getIgnoreGrowing() != null) {
-            builder.withGracefulTime(wrapper.getIgnoreGrowing());
         }
         if (wrapper.getExtra() != null) {
             builder.withParams(gson.toJson(wrapper.getExtra()));
@@ -437,8 +432,8 @@ public class MilvusClientService {
         return resultRows;
     }
 
-
-    public <T extends VectorModel<?>> List<T> query(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+    public <T extends VectorModel<?>> List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
+        Class<T> clazz = wrapper.getEntityType();
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
@@ -453,15 +448,6 @@ public class MilvusClientService {
         }
         if (!CollectionUtils.isEmpty(wrapper.getPartitionNames())) {
             builder.withPartitionNames(wrapper.getPartitionNames());
-        }
-        if (wrapper.getTravelTimestamp() != null) {
-            builder.withTravelTimestamp(wrapper.getTravelTimestamp());
-        }
-        if (wrapper.getGracefulTime() != null) {
-            builder.withGracefulTime(wrapper.getGracefulTime());
-        }
-        if (wrapper.getIgnoreGrowing() != null) {
-            builder.withGracefulTime(wrapper.getIgnoreGrowing());
         }
         builder.withCollectionName(collectionDefinition.getName());
         builder.withConsistencyLevel(wrapper.getConsistencyLevel());
@@ -497,6 +483,4 @@ public class MilvusClientService {
         }
         return resultRows;
     }
-
-
 }

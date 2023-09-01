@@ -10,80 +10,97 @@ import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
     private MilvusClientService milvusClientService;
 
+    private final Class<T> entityType;
+
+    public VectorModelRepositoryImpl() {
+        Type superClass = getClass().getGenericSuperclass();
+        if (superClass instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) superClass;
+            entityType = (Class<T>) parameterizedType.getActualTypeArguments()[0];
+        } else {
+            throw new IllegalArgumentException("Unable to determine the entity type.");
+        }
+    }
+
     public boolean insert(T vectorModel) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.insert(vectorModel);
     }
 
-    public boolean remove(Object pk, Class<T> clazz) throws MilvusException {
+    public boolean remove(Object pk) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.remove(pk, clazz);
+        return milvusClientService.remove(pk, entityType);
     }
 
-    public boolean batchRemove(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+    public boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
+        wrapper.setEntityType(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.batchRemove(wrapper, clazz);
+        return milvusClientService.batchRemove(wrapper);
     }
 
-    public boolean createCollection(Class<T> clazz) throws MilvusException {
+    public boolean createCollection() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createCollection(clazz);
+        return milvusClientService.createCollection(entityType);
     }
 
-    public void loadCollection(Class<T> clazz) throws MilvusException {
+    public void loadCollection() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.loadCollection(clazz);
+        milvusClientService.loadCollection(entityType);
     }
 
-    public LoadState getLoadState(Class<T> clazz) throws MilvusException {
+    public LoadState getLoadState() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.getLoadState(clazz);
+        return milvusClientService.getLoadState(entityType);
     }
 
-    public Long getLoadProgress(Class<T> clazz) throws MilvusException {
+    public Long getLoadProgress() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.getLoadProgress(clazz);
+        return milvusClientService.getLoadProgress(entityType);
     }
 
 
-    public void releaseCollection(Class<T> clazz) throws MilvusException {
+    public void releaseCollection() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.releaseCollection(clazz);
+        milvusClientService.releaseCollection(entityType);
     }
 
-    public boolean createIndex(Class<T> clazz, String indexName, SFunction<T, ?> column, IIndexExtra extraParam) throws MilvusException {
+    public boolean createIndex(String indexName, SFunction<T, ?> column, IIndexExtra extraParam) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createIndex(clazz, indexName, column, extraParam);
+        return milvusClientService.createIndex(entityType, indexName, column, extraParam);
     }
 
-    public boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
+    public boolean dropIndex(String indexName) throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.dropIndex(clazz, indexName);
+        return milvusClientService.dropIndex(entityType, indexName);
     }
 
-    public void dropCollection(Class<T> clazz) throws MilvusException {
+    public void dropCollection() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.dropCollection(clazz);
+        milvusClientService.dropCollection(entityType);
     }
 
-    public boolean hasCollection(Class<T> clazz) throws MilvusException {
+    public boolean hasCollection() throws MilvusException {
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.hasCollection(clazz);
+        return milvusClientService.hasCollection(entityType);
     }
 
-    public List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+    public List<T> search(LambdaSearchWrapper<T> wrapper) throws MilvusException {
+        wrapper.setEntityType(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.search(wrapper, clazz);
+        return milvusClientService.search(wrapper);
     }
 
-    public List<T> query(LambdaQueryWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
+    public List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
+        wrapper.setEntityType(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.query(wrapper, clazz);
+        return milvusClientService.query(wrapper);
     }
 }

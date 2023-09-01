@@ -125,13 +125,13 @@ class UserBlogVectorServiceTest {
      */
     @Test
     public void createCollection() throws MilvusException {
-        boolean ret = userBlogVectorDao.createCollection(UserBlogVector.class);
+        boolean ret = userBlogVectorDao.createCollection();
         HNSWIIndexExtra extra = new HNSWIIndexExtra();
         extra.setM(16);
         extra.setEfConstruction(8);
-        userBlogVectorDao.createIndex(UserBlogVector.class, "idx_blog_vector",
+        userBlogVectorDao.createIndex( "idx_blog_vector",
                 UserBlogVector::getBlogTextVector, extra);
-        userBlogVectorDao.loadCollection(UserBlogVector.class);
+        userBlogVectorDao.loadCollection();
     }
 
     /**
@@ -139,7 +139,7 @@ class UserBlogVectorServiceTest {
 =     */
     @Test
     public void deleteRecord() throws MilvusException {
-        boolean ret = userBlogVectorDao.remove(12345556, UserBlogVector.class);
+        boolean ret = userBlogVectorDao.remove(12345556);
         log.info("{}", ret);
     }
 
@@ -150,7 +150,7 @@ class UserBlogVectorServiceTest {
     public void query() throws MilvusException {
         LambdaQueryWrapper<UserBlogVector> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserBlogVector::getUid, 123456L);
-        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper, UserBlogVector.class);
+        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
         log.info("{}", queryResults);
     }
 
@@ -166,7 +166,7 @@ class UserBlogVectorServiceTest {
         wrapper.vector(UserBlogVector::getBlogTextVector, result.getEmbeddings());
         wrapper.setTopK(10);
         wrapper.eq(UserBlogVector::getUid, 123456L);
-        List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper, UserBlogVector.class);
+        List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper);
         log.info("{}", searchResults);
     }
 

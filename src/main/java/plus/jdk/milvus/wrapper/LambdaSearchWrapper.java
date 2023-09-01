@@ -7,6 +7,8 @@ import lombok.Getter;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 
 
