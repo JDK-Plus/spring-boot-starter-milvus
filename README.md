@@ -18,7 +18,7 @@ Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/mast
 <dependency>
     <groupId>plus.jdk</groupId>
     <artifactId>spring-boot-starter-milvus</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.5</version>
 </dependency>
 ```
 
