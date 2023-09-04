@@ -30,11 +30,9 @@ import plus.jdk.milvus.annotation.VectorCollectionName;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.Operator;
 import plus.jdk.milvus.config.MilvusPlusProperties;
-import plus.jdk.milvus.model.ColumnDefinition;
-import plus.jdk.milvus.model.CollectionDefinition;
-import plus.jdk.milvus.model.IIndexExtra;
-import plus.jdk.milvus.model.WrapperModel;
+import plus.jdk.milvus.model.*;
 import plus.jdk.milvus.record.VectorModel;
+import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
@@ -482,5 +480,40 @@ public class MilvusClientService {
             resultRows.add(data);
         }
         return resultRows;
+    }
+
+    public <T extends VectorModel<?>> GetCollectionStatisticsResponse getCollectionStatistics(Class<T> clazz) throws MilvusException {
+        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        GetCollectionStatisticsParam.Builder builder = GetCollectionStatisticsParam.newBuilder();
+        builder.withCollectionName(collectionDefinition.getName());
+        if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
+            builder.withDatabaseName(collectionDefinition.getDatabase());
+        }
+        R<GetCollectionStatisticsResponse> resultR = milvusClient.getCollectionStatistics(builder.build());
+        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
+            throw new MilvusException(resultR.getException().getMessage());
+        }
+        return resultR.getData();
+    }
+
+    public <T extends VectorModel<?>> Page<T> queryPage(LambdaQueryWrapper<T> wrapper, Long page, Long pageSize) throws MilvusException {
+        Page<T> dataPage = new Page<>();
+        dataPage.setPage(page);
+        dataPage.setPageSize(pageSize);
+        wrapper.setLimit(pageSize);
+        wrapper.setOffset(page * pageSize);
+        List<T> instanceList = this.query(wrapper);
+        dataPage.setInstances(instanceList);
+        return dataPage;
+    }
+
+    public <T extends VectorModel<?>> Long getRowCount(Class<T> clazz) throws MilvusException {
+        GetCollectionStatisticsResponse statistics = getCollectionStatistics(clazz);
+        for (KeyValuePair pair : statistics.getStatsList()) {
+            if("row_count".equals(pair.getKey())) {
+                return Long.parseLong(pair.getValue());
+            }
+        }
+        return 0L;
     }
 }

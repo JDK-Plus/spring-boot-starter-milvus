@@ -5,6 +5,7 @@ import io.milvus.grpc.LoadState;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.model.IIndexExtra;
+import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.selector.MilvusSelector;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
@@ -102,5 +103,11 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
         wrapper.setEntityType(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.query(wrapper);
+    }
+
+    public Page<T> queryPage(LambdaQueryWrapper<T> wrapper, Long page, Long pageSize) throws MilvusException {
+        wrapper.setEntityType(entityType);
+        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
+        return milvusClientService.queryPage(wrapper, page, pageSize);
     }
 }
