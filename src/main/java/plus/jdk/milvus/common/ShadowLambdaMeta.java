@@ -1,7 +1,6 @@
 package plus.jdk.milvus.common;
 
 /**
- * 基于 {@link com.baomidou.mybatisplus.core.toolkit.support.SerializedLambda} 创建的元信息
  * <p>
  * Create by hcl at 2021/7/7
  */
