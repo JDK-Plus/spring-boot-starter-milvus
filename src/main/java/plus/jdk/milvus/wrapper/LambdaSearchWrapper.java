@@ -1,9 +1,9 @@
 package plus.jdk.milvus.wrapper;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
 

@@ -1,6 +1,5 @@
 package plus.jdk.milvus.wrapper;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import lombok.Data;
 
@@ -15,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.Operator;
+import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.model.WrapperModel;
 import plus.jdk.milvus.record.VectorModel;

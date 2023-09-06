@@ -1,10 +1,10 @@
 package plus.jdk.milvus.model;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.grpc.DataType;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import lombok.Data;
+import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.global.VectorTypeHandler;
 
 import java.lang.reflect.Field;

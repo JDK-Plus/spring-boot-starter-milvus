@@ -1,9 +1,9 @@
 package plus.jdk.milvus.model;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import plus.jdk.milvus.common.Operator;
+import plus.jdk.milvus.common.SFunction;
 
 @Data
 @AllArgsConstructor

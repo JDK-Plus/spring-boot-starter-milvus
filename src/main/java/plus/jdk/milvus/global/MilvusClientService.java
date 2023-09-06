@@ -1,8 +1,5 @@
 package plus.jdk.milvus.global;
 
-import com.baomidou.mybatisplus.core.toolkit.LambdaUtils;
-import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.google.gson.Gson;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -17,7 +14,6 @@ import io.milvus.param.index.DropIndexParam;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.reflection.property.PropertyNamer;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -27,8 +23,7 @@ import org.springframework.util.ReflectionUtils;
 import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
 import plus.jdk.milvus.annotation.VectorCollectionName;
-import plus.jdk.milvus.common.MilvusException;
-import plus.jdk.milvus.common.Operator;
+import plus.jdk.milvus.common.*;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.*;
 import plus.jdk.milvus.record.VectorModel;

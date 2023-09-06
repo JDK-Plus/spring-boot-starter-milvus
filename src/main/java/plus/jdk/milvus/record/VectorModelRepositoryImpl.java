@@ -1,8 +1,8 @@
 package plus.jdk.milvus.record;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import io.milvus.grpc.LoadState;
 import plus.jdk.milvus.common.MilvusException;
+import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.Page;
