@@ -2,10 +2,7 @@ package plus.jdk.milvus.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import plus.jdk.milvus.common.operator.CompareOperatorComputer;
-import plus.jdk.milvus.common.operator.IOperatorComputer;
-import plus.jdk.milvus.common.operator.InOperatorComputer;
-import plus.jdk.milvus.common.operator.LogicOperatorComputer;
+import plus.jdk.milvus.common.operator.*;
 import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
 
 import java.util.ArrayList;
@@ -27,6 +24,9 @@ public enum Operator {
     or(new LogicOperatorComputer("or")),
     not(new LogicOperatorComputer("not")),
     in(new InOperatorComputer()),
+    contains(new JsonArrayOperatorComputer("json_contains")),
+    contains_all(new JsonArrayOperatorComputer("json_contains_all")),
+    contains_any(new JsonArrayOperatorComputer("json_contains_any")),
     ;
     /**
      * 回调
