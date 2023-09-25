@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -23,41 +24,35 @@ import plus.jdk.milvus.selector.MilvusSelector;
 /**
  * <a href="https://milvus.io/docs/boolean.md">向量相似性检索</a>
  */
+@Getter
 public abstract class AbstractLambdaWrapper<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
     /**
      * 普通的查询参数
      */
-    @Getter
     private final List<WrapperModel<T>> wrapperModels = new ArrayList<>();
 
     /**
      * 查询中使用的一致性等级
      */
-    @Getter
     @Setter
     private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.STRONG;
 
-    @Getter
     @Setter
     private List<String> partitionNames = new ArrayList<>();
 
-    @Getter
     @Setter
     @Deprecated
     private Long travelTimestamp;
 
-    @Getter
     @Setter
     @Deprecated
     private Long gracefulTime;
 
-    @Getter
     @Setter
     @Deprecated
     private Long ignoreGrowing;
 
-    @Getter
     @Setter
     protected Class<T> entityType;
 
@@ -106,23 +101,45 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<? extends Vect
         return this;
     }
 
-    public AbstractLambdaWrapper<T> and(AbstractLambdaWrapper<T> ...wrappers) {
+    @SafeVarargs
+    public final AbstractLambdaWrapper<T> and(AbstractLambdaWrapper<T>... wrappers) {
         this.wrapperModels.add(new WrapperModel<>(null, Operator.and, wrappers));
         return this;
     }
 
-    public AbstractLambdaWrapper<T> or(AbstractLambdaWrapper<T> ...wrappers) {
+    @SafeVarargs
+    public final AbstractLambdaWrapper<T> or(AbstractLambdaWrapper<T> ...wrappers) {
         this.wrapperModels.add(new WrapperModel<>(null, Operator.or, wrappers));
         return this;
     }
 
-    public AbstractLambdaWrapper<T> not(AbstractLambdaWrapper<T> ...wrappers) {
+    @SafeVarargs
+    public final AbstractLambdaWrapper<T> not(AbstractLambdaWrapper<T> ...wrappers) {
         this.wrapperModels.add(new WrapperModel<>(null, Operator.not, wrappers));
         return this;
     }
 
-    public <R> AbstractLambdaWrapper<T> in(SFunction<T, R> column, R ...values) {
+    @SafeVarargs
+    public final  <R> AbstractLambdaWrapper<T> in(SFunction<T, R> column, R ...values) {
         this.wrapperModels.add(new WrapperModel<>(column, Operator.in, values));
+        return this;
+    }
+
+    @SafeVarargs
+    public final  <R> AbstractLambdaWrapper<T> contains(SFunction<T, R> column, R ...values) {
+        this.wrapperModels.add(new WrapperModel<>(column, Operator.contains, values));
+        return this;
+    }
+
+    @SafeVarargs
+    public final <R> AbstractLambdaWrapper<T> contains_all(SFunction<T, R> column, R... values) {
+        this.wrapperModels.add(new WrapperModel<>(column, Operator.contains_all, values));
+        return this;
+    }
+
+    @SafeVarargs
+    public final <R> AbstractLambdaWrapper<T> contains_any(SFunction<T, R> column, R... values) {
+        this.wrapperModels.add(new WrapperModel<>(column, Operator.contains_any, values));
         return this;
     }
 
