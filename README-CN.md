@@ -12,6 +12,9 @@ Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/mast
 </p>
 该组件是一个仿照mybatis-plus风格编写的Milvus组件， 可以让你像使用mysql那样使用java来操作Milvus，执行精确的query查询或者使用向量执行相似性查询。
 
+- [English](README.md)
+
+
 ### 一、如何引入
 
 ```xml

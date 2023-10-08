@@ -12,6 +12,8 @@ Milvus is released under the [Apache 2.0 License](https://github.com/milvus-io/m
 </p>
 This component is a Milvus component written in the style of mybatis-plus. It allows you to operate Milvus in java just like using mysql, executing precise query operations, or using vectors to execute similarity queries.
 
+- [中文文档](README-CN.md)
+
 ### I. How to Import
 
 ```xml
