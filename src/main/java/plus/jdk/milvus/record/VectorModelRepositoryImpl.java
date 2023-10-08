@@ -17,9 +17,8 @@ import java.util.List;
 
 public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
 
-    private MilvusClientService milvusClientService;
-
     private final Class<T> entityType;
+    private MilvusClientService milvusClientService;
 
     public VectorModelRepositoryImpl() {
         Type superClass = getClass().getGenericSuperclass();

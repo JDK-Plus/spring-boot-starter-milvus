@@ -1,7 +1,6 @@
 package plus.jdk.milvus.global;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.ApplicationContext;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 
 import java.util.Map;
@@ -13,17 +12,11 @@ public class TypeHandlerRegistry {
 
     private final BeanFactory beanFactory;
 
-    private final ApplicationContext applicationContext;
-
     private Map<Class<?>, VectorTypeHandler<?, ?>> typeHandlerInstanceMap = new ConcurrentHashMap<>();
 
     public TypeHandlerRegistry(MilvusPlusProperties properties,
-                               BeanFactory beanFactory,
-                               ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+                               BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
         this.properties = properties;
     }
-
-
 }

@@ -27,23 +27,17 @@ public final class ReflectionKit {
      */
     private static final Map<Class<?>, List<Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<>();
 
-    @Deprecated
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new IdentityHashMap<>(8);
-
     private static final Map<Class<?>, Class<?>> PRIMITIVE_TYPE_TO_WRAPPER_MAP = new IdentityHashMap<>(8);
 
     static {
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Boolean.class, boolean.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Byte.class, byte.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Character.class, char.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Double.class, double.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Float.class, float.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Integer.class, int.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Long.class, long.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Short.class, short.class);
-        for (Map.Entry<Class<?>, Class<?>> entry : PRIMITIVE_WRAPPER_TYPE_MAP.entrySet()) {
-            PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(entry.getValue(), entry.getKey());
-        }
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Boolean.class, boolean.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Byte.class, byte.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Character.class, char.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Double.class, double.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Float.class, float.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Integer.class, int.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Long.class, long.class);
+        PRIMITIVE_TYPE_TO_WRAPPER_MAP.put(Short.class, short.class);
     }
 
     /**
@@ -87,6 +81,7 @@ public final class ReflectionKit {
      * </p>
      *
      * @param clazz 反射类
+     * @return 所有属性列表
      */
     public static Map<String, Field> getFieldMap(Class<?> clazz) {
         List<Field> fieldList = getFieldList(clazz);
@@ -99,6 +94,7 @@ public final class ReflectionKit {
      * </p>
      *
      * @param clazz 反射类
+     * @return 所有属性列表
      */
     public static List<Field> getFieldList(Class<?> clazz) {
         if (Objects.isNull(clazz)) {
@@ -136,6 +132,7 @@ public final class ReflectionKit {
      *
      * @param fields         子类属性
      * @param superFieldList 父类属性
+     * @return 字段映射
      */
     public static Map<String, Field> excludeOverrideSuperField(Field[] fields, List<Field> superFieldList) {
         // 子类属性
@@ -147,17 +144,6 @@ public final class ReflectionKit {
         superFieldList.stream().filter(field -> !fieldMap.containsKey(field.getName()))
                 .forEach(f -> fieldMap.put(f.getName(), f));
         return fieldMap;
-    }
-
-    /**
-     * 判断是否为基本类型或基本包装类型
-     *
-     * @param clazz class
-     * @return 是否基本类型或基本包装类型
-     */
-    @Deprecated
-    public static boolean isPrimitiveOrWrapper(Class<?> clazz) {
-        return (clazz.isPrimitive() || PRIMITIVE_WRAPPER_TYPE_MAP.containsKey(clazz));
     }
 
     public static Class<?> resolvePrimitiveIfNecessary(Class<?> clazz) {

@@ -1,8 +1,8 @@
 package plus.jdk.milvus.model;
 
 /**
- * https://milvus.io/docs/build_index.md
- * https://milvus.io/docs/index.md#floating
+ * <a href="https://milvus.io/docs/build_index.md">build_index</a>
+ * <a href="https://milvus.io/docs/index.md#floating">floating</a>
  */
 public interface IIndexExtra {
 

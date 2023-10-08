@@ -1,8 +1,6 @@
 package plus.jdk.milvus.config;
 
-import io.milvus.param.ConnectParam;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 

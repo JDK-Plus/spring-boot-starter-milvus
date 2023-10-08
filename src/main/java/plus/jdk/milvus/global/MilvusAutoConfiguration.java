@@ -15,6 +15,6 @@ import plus.jdk.milvus.config.MilvusPlusProperties;
 public class MilvusAutoConfiguration {
 
     public MilvusAutoConfiguration(MilvusPlusProperties milvusPlusProperties) {
-        log.info("{}", milvusPlusProperties);
+        log.debug("{}", milvusPlusProperties);
     }
 }

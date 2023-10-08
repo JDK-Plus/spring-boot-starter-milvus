@@ -1,7 +1,6 @@
 package plus.jdk.milvus.common;
 
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -18,6 +17,7 @@ public final class Assert {
      *
      * @param expression boolean 值
      * @param message    消息
+     * @param params     参数
      */
     public static void isTrue(boolean expression, String message, Object... params) {
         if (!expression) {
@@ -31,6 +31,7 @@ public final class Assert {
      *
      * @param object  对象
      * @param message 消息
+     * @param params  参数
      */
     public static void notNull(Object object, String message, Object... params) {
         isTrue(object != null, message, params);
@@ -42,6 +43,7 @@ public final class Assert {
      *
      * @param map     集合
      * @param message 消息
+     * @param params  参数
      */
     public static void isEmpty(Map<?, ?> map, String message, Object... params) {
         isTrue(CollectionUtils.isEmpty(map), message, params);

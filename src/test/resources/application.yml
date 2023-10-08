@@ -1,0 +1,9 @@
+
+plus:
+  jdk:
+    milvus:
+      enabled: true
+      host: 127.0.0.1
+      port: 19530
+      connect-timeout: 1000
+      idle-timeout: 5000

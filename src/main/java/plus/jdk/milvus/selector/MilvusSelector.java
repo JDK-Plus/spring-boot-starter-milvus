@@ -8,9 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.support.WebApplicationObjectSupport;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import plus.jdk.milvus.config.MilvusPlusProperties;
+import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.global.TypeHandlerRegistry;
 import plus.jdk.milvus.global.handler.UnknownTypeHandler;
-import plus.jdk.milvus.global.MilvusClientService;
 
 @Configuration
 public class MilvusSelector extends WebApplicationObjectSupport implements BeanFactoryAware, WebMvcConfigurer {
@@ -23,17 +23,17 @@ public class MilvusSelector extends WebApplicationObjectSupport implements BeanF
     }
 
     @Bean
-    public UnknownTypeHandler getDefaultEmbeddingTypeHandler() {
+    public UnknownTypeHandler defaultEmbeddingTypeHandler() {
         return new UnknownTypeHandler();
     }
 
     @Bean
-    public MilvusClientService getMilvusClientService(MilvusPlusProperties properties) {
-        return new MilvusClientService(properties, beanFactory, getApplicationContext());
+    public MilvusClientService milvusClientService(MilvusPlusProperties properties) {
+        return new MilvusClientService(properties, beanFactory);
     }
 
     @Bean
-    public TypeHandlerRegistry TypeHandlerRegistry(MilvusPlusProperties properties) {
-        return new TypeHandlerRegistry(properties, beanFactory, getApplicationContext());
+    public TypeHandlerRegistry typeHandlerRegistry(MilvusPlusProperties properties) {
+        return new TypeHandlerRegistry(properties, beanFactory);
     }
 }
