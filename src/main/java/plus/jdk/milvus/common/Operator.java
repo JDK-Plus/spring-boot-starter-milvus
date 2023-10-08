@@ -3,11 +3,6 @@ package plus.jdk.milvus.common;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import plus.jdk.milvus.common.operator.*;
-import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -32,4 +27,14 @@ public enum Operator {
      * 回调
      */
     private final IOperatorComputer iOperatorComputer;
+
+    public static boolean matchAndOr(String string) {
+        if (string.startsWith(and.getIOperatorComputer().getOperator())) {
+            return true;
+        }
+        if (string.startsWith(or.getIOperatorComputer().getOperator())) {
+            return true;
+        }
+        return false;
+    }
 }

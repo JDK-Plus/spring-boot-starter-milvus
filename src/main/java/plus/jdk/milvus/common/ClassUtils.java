@@ -16,16 +16,6 @@ import java.util.List;
  */
 public final class ClassUtils {
 
-    private static ClassLoader systemClassLoader;
-
-    static {
-        try {
-            systemClassLoader = ClassLoader.getSystemClassLoader();
-        } catch (SecurityException ignored) {
-            // AccessControlException on Google App Engine
-        }
-    }
-
     /**
      * 代理 class 的名称
      */
@@ -35,6 +25,15 @@ public final class ClassUtils {
             , "javassist.util.proxy.ProxyObject"
             // javassist
             , "org.apache.ibatis.javassist.util.proxy.ProxyObject");
+    private static ClassLoader systemClassLoader;
+
+    static {
+        try {
+            systemClassLoader = ClassLoader.getSystemClassLoader();
+        } catch (SecurityException ignored) {
+            // AccessControlException on Google App Engine
+        }
+    }
 
     private ClassUtils() {
     }
@@ -109,7 +108,8 @@ public final class ClassUtils {
             Constructor<T> constructor = clazz.getDeclaredConstructor();
             constructor.setAccessible(true);
             return constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                 NoSuchMethodException e) {
             throw ExceptionUtils.mpe("实例化对象时出现错误,请尝试给 %s 添加无参的构造方法", e, clazz.getName());
         }
     }
@@ -141,9 +141,9 @@ public final class ClassUtils {
     }
 
     /**
-     * @param name
-     * @param classLoader
-     * @return
+     * @param name        类名称
+     * @param classLoader 类加载器
+     * @return 返回转换后的 Class
      * @since 3.4.3
      */
     public static Class<?> toClassConfident(String name, ClassLoader classLoader) {

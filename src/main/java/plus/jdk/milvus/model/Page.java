@@ -1,15 +1,11 @@
 package plus.jdk.milvus.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Page<T> {
 
     /**
@@ -29,6 +25,6 @@ public class Page<T> {
 
 
     public boolean hasNext() {
-        return instances.size() > 0;
+        return !instances.isEmpty();
     }
 }

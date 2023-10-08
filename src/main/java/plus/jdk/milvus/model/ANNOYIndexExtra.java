@@ -17,7 +17,7 @@ public class ANNOYIndexExtra implements IIndexExtra {
     private Integer nTrees;
 
     /**
-     * Search parameters]
+     * Search parameters
      * The parameters that controls the search scope.	[k, inf]
      */
     @SerializedName("search_k")

@@ -12,6 +12,10 @@ public class GenericTypeUtils {
 
     /**
      * 获取泛型工具助手
+     *
+     * @param clazz      类
+     * @param genericIfc 泛型接口
+     * @return 泛型工具助手
      */
     public static Class<?>[] resolveTypeArguments(final Class<?> clazz, final Class<?> genericIfc) {
         if (null == GENERIC_TYPE_RESOLVER) {
@@ -23,6 +27,8 @@ public class GenericTypeUtils {
 
     /**
      * 设置泛型工具助手。如果不想使用Spring封装，可以使用前替换掉
+     *
+     * @param genericTypeResolver 通用类型解析器
      */
     public static void setGenericTypeResolver(IGenericTypeResolver genericTypeResolver) {
         GENERIC_TYPE_RESOLVER = genericTypeResolver;

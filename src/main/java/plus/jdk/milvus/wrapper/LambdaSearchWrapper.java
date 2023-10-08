@@ -2,13 +2,10 @@ package plus.jdk.milvus.wrapper;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 
 
@@ -33,13 +30,11 @@ public class LambdaSearchWrapper<T extends VectorModel<?>> extends AbstractLambd
     /**
      * 指定要检索的向量列
      */
-    @Getter
     private SFunction<T, ?> vectorColumn;
 
     /**
      * 指定输入向量
      */
-    @Getter
     private List<?> vectorValue;
 
     public <R> AbstractLambdaWrapper<T> vector(SFunction<T, R> column, R value) {

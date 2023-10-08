@@ -3,8 +3,8 @@ package plus.jdk.milvus.annotation;
 import io.milvus.grpc.DataType;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
-import plus.jdk.milvus.global.handler.UnknownTypeHandler;
 import plus.jdk.milvus.global.VectorTypeHandler;
+import plus.jdk.milvus.global.handler.UnknownTypeHandler;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -41,7 +41,7 @@ public @interface VectorCollectionColumn {
     String desc() default "";
 
     /**
-     * @return 指定向量维度,其他类型无需指定
+     * @return 指定向量维度, 其他类型无需指定
      */
     int vectorDimension() default 1024;
 

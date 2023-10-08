@@ -80,7 +80,7 @@ public class ColumnDefinition {
      */
     private MetricType metricType = MetricType.L2;
 
-    public boolean canBePartitionKey(){
+    public boolean canBePartitionKey() {
         return dataType == DataType.Int64 || dataType == DataType.VarChar;
     }
 

@@ -33,8 +33,8 @@ public class CollectionDefinition {
     private List<ColumnDefinition> columns = new ArrayList<>();
 
     public ColumnDefinition getPrimaryColumn() {
-        for(ColumnDefinition columnDefinition :columns) {
-            if(columnDefinition.getPrimary()) {
+        for (ColumnDefinition columnDefinition : columns) {
+            if (columnDefinition.getPrimary()) {
                 return columnDefinition;
             }
         }
@@ -42,8 +42,8 @@ public class CollectionDefinition {
     }
 
     public ColumnDefinition getColumnByColumnName(String columnName) {
-        for(ColumnDefinition columnDefinition :columns) {
-            if(columnDefinition.getName().equals(columnName)) {
+        for (ColumnDefinition columnDefinition : columns) {
+            if (columnDefinition.getName().equals(columnName)) {
                 return columnDefinition;
             }
         }

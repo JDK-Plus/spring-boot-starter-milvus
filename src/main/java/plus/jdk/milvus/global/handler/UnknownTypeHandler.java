@@ -1,14 +1,12 @@
 package plus.jdk.milvus.global.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import plus.jdk.milvus.annotation.EmbeddingHandler;
 import plus.jdk.milvus.global.VectorTypeHandler;
 
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
-@EmbeddingHandler
 public class UnknownTypeHandler implements VectorTypeHandler<Object, Object> {
 
     /**

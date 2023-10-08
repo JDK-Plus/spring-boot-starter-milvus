@@ -10,7 +10,12 @@ import java.util.List;
 public class InOperatorComputer implements IOperatorComputer {
 
     @Override
-    public String compute(String leftValue, Object rightValue, Class<?> clazz) throws MilvusException {
+    public String getOperator() {
+        return "";
+    }
+
+    @Override
+    public String compute(String leftValue, Object rightValue, Object identifier, Class<?> clazz) throws MilvusException {
         List<String> params = new ArrayList<>();
         for (Object object : (Object[]) rightValue) {
             params.add(String.valueOf(formatRvalue(object)));

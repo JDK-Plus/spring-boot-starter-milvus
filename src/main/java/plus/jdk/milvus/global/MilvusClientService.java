@@ -1,9 +1,11 @@
 package plus.jdk.milvus.global;
 
 import com.google.gson.Gson;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
-import io.milvus.param.*;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
@@ -14,30 +16,32 @@ import io.milvus.param.index.DropIndexParam;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-import io.milvus.client.MilvusServiceClient;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
-import plus.jdk.cli.common.StringUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
 import plus.jdk.milvus.annotation.VectorCollectionName;
 import plus.jdk.milvus.common.*;
 import plus.jdk.milvus.config.MilvusPlusProperties;
-import plus.jdk.milvus.model.*;
+import plus.jdk.milvus.model.CollectionDefinition;
+import plus.jdk.milvus.model.ColumnDefinition;
+import plus.jdk.milvus.model.IIndexExtra;
+import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@Service
 public class MilvusClientService {
 
     private final MilvusPlusProperties properties;
@@ -46,29 +50,11 @@ public class MilvusClientService {
 
     private final BeanFactory beanFactory;
 
-    private final ApplicationContext applicationContext;
-
     private final Gson gson = new Gson();
 
     private final Map<Class<?>, CollectionDefinition> tableDefinitionMap = new ConcurrentHashMap<>();
 
-    public String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
-        LambdaMeta lambdaMeta = LambdaUtils.extract(column);
-        String attributeName = PropertyNamer.methodToProperty(lambdaMeta.getImplMethodName());
-        Field field = null;
-        try {
-            field = clazz.getDeclaredField(attributeName);
-        } catch (Exception e) {
-            throw new MilvusException(String.format("unknown attributeName '%s'", attributeName));
-        }
-        VectorCollectionColumn vectorCollectionColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
-        if (vectorCollectionColumn == null) {
-            throw new MilvusException("table column must annotation with @VectorCollectionColumn");
-        }
-        return vectorCollectionColumn.name();
-    }
-
-    public MilvusClientService(MilvusPlusProperties properties, BeanFactory beanFactory, ApplicationContext applicationContext) {
+    public MilvusClientService(MilvusPlusProperties properties, BeanFactory beanFactory) {
         ConnectParam.Builder builder = ConnectParam.newBuilder();
         if (properties.getHost() != null) {
             builder.withHost(properties.getHost());
@@ -105,8 +91,23 @@ public class MilvusClientService {
         }
         this.properties = properties;
         this.beanFactory = beanFactory;
-        this.applicationContext = applicationContext;
         this.milvusClient = new MilvusServiceClient(builder.build());
+    }
+
+    public String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
+        LambdaMeta lambdaMeta = LambdaUtils.extract(column);
+        String attributeName = PropertyNamer.methodToProperty(lambdaMeta.getImplMethodName());
+        Field field;
+        try {
+            field = clazz.getDeclaredField(attributeName);
+        } catch (Exception e) {
+            throw new MilvusException(String.format("unknown attributeName '%s'", attributeName));
+        }
+        VectorCollectionColumn vectorCollectionColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
+        if (vectorCollectionColumn == null) {
+            throw new MilvusException("table column must annotation with @VectorCollectionColumn");
+        }
+        return vectorCollectionColumn.name();
     }
 
     protected List<Field> getDeclaredFields(Class<?> clazz, List<Field> fields) {
@@ -122,15 +123,7 @@ public class MilvusClientService {
         if (tableDefinitionMap.containsKey(clazz)) {
             return tableDefinitionMap.get(clazz);
         }
-        CollectionDefinition collectionDefinition = new CollectionDefinition();
-        VectorCollectionName vectorCollectionName = clazz.getAnnotation(VectorCollectionName.class);
-        if (vectorCollectionName == null) {
-            throw new MilvusException("table model must annotation with @VectorCollectionName");
-        }
-        collectionDefinition.setDescription(vectorCollectionName.description());
-        collectionDefinition.setName(vectorCollectionName.name());
-        collectionDefinition.setDatabase(vectorCollectionName.database());
-        collectionDefinition.setClazz(clazz);
+        CollectionDefinition collectionDefinition = this.getCollectionDefinition(clazz);
         Field[] clazzFields = clazz.getDeclaredFields();
         for (Field field : clazzFields) {
             ReflectionUtils.makeAccessible(field);
@@ -159,10 +152,24 @@ public class MilvusClientService {
         return collectionDefinition;
     }
 
+    @NotNull
+    private <T extends VectorModel<?>> CollectionDefinition getCollectionDefinition(Class<T> clazz) {
+        CollectionDefinition collectionDefinition = new CollectionDefinition();
+        VectorCollectionName vectorCollectionName = clazz.getAnnotation(VectorCollectionName.class);
+        if (vectorCollectionName == null) {
+            throw new MilvusException("table model must annotation with @VectorCollectionName");
+        }
+        collectionDefinition.setDescription(vectorCollectionName.description());
+        collectionDefinition.setName(vectorCollectionName.name());
+        collectionDefinition.setDatabase(vectorCollectionName.database());
+        collectionDefinition.setClazz(clazz);
+        return collectionDefinition;
+    }
+
     public <T extends VectorModel<?>> boolean remove(Object pk, Class<T> clazz) throws MilvusException {
         CollectionDefinition collection = getTableDefinition(clazz);
         String columnName = collection.getPrimaryColumn().getName();
-        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk}, clazz);
+        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk}, null, clazz);
         if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
@@ -214,7 +221,7 @@ public class MilvusClientService {
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
             throw new MilvusException(resultR.getException().getMessage());
         }
-        if (resultR.getData() != null && resultR.getData().getIDs().getIntId().getDataList().size() > 0) {
+        if (resultR.getData() != null && !resultR.getData().getIDs().getIntId().getDataList().isEmpty()) {
             ColumnDefinition column = collectionDefinition.getPrimaryColumn();
             ReflectionUtils.makeAccessible(column.getField());
             Object id = resultR.getData().getIDs().getIntId().getDataList().get(0);
@@ -505,7 +512,7 @@ public class MilvusClientService {
     public <T extends VectorModel<?>> Long getRowCount(Class<T> clazz) throws MilvusException {
         GetCollectionStatisticsResponse statistics = getCollectionStatistics(clazz);
         for (KeyValuePair pair : statistics.getStatsList()) {
-            if("row_count".equals(pair.getKey())) {
+            if ("row_count".equals(pair.getKey())) {
                 return Long.parseLong(pair.getValue());
             }
         }
