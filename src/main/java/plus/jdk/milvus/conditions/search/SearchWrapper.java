@@ -1,25 +1,26 @@
-package plus.jdk.milvus.wrapper;
+package plus.jdk.milvus.conditions.search;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import plus.jdk.milvus.conditions.AbstractLambdaWrapper;
+import plus.jdk.milvus.conditions.AbstractWrapper;
 import plus.jdk.milvus.conditions.SharedString;
-import plus.jdk.milvus.conditions.search.Search;
 import plus.jdk.milvus.conditions.segments.MergeSegments;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
 import plus.jdk.milvus.toolKit.support.SFunction;
+import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Lambda 更新封装
- */
-public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>> extends AbstractLambdaWrapper<T, LambdaSearchWrapper<T>>
-        implements Search<LambdaSearchWrapper<T>, T, SFunction<T, ?>> {
+public class SearchWrapper<T extends VectorModel<? extends VectorModel<?>>> extends AbstractWrapper<T, String, SearchWrapper<T>>
+        implements Search<SearchWrapper<T>, T, String> {
 
+    /**
+     * 查询字段
+     */
+    protected final SharedString exprSelect = new SharedString();
     /**
      * 额外的索引查询参数
      * Search parameter(s) specific to the index.
@@ -29,7 +30,6 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     @Setter
     @Accessors(chain = true)
     private IIndexExtra extra;
-
     /**
      * 查询最相似的多少条数据
      * Number of the most similar results to return.
@@ -38,8 +38,6 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     @Setter
     @Accessors(chain = true)
     private Integer topK = 10;
-
-
     /**
      * 指定要检索的向量列
      */
@@ -47,7 +45,6 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     @Setter
     @Accessors(chain = true)
     private SFunction<T, ?> vectorColumn;
-
     /**
      * 指定输入向量
      */
@@ -56,40 +53,31 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     @Accessors(chain = true)
     private List<?> vectorValue;
 
-    private SharedString exprSelect = new SharedString();
-
-    public LambdaSearchWrapper() {
-        // 如果无参构造函数，请注意实体 NULL 情况 SET 必须有否则 SQL 异常
+    public SearchWrapper() {
         this((T) null);
     }
 
-    public LambdaSearchWrapper(T entity) {
+    public SearchWrapper(T entity) {
         super.setEntity(entity);
         super.initNeed();
     }
 
-    public LambdaSearchWrapper(Class<T> entityClass) {
+    public SearchWrapper(Class<T> entityClass) {
         super.setEntityClass(entityClass);
         super.initNeed();
     }
 
-    public LambdaSearchWrapper(T entity, Class<T> entityClass, SharedString exprSelect, AtomicInteger paramNameSeq,
-                               MergeSegments mergeSegments, IIndexExtra extra, Integer topK, SFunction<T, ?> vectorColumn, List<?> vectorValue) {
+    /**
+     * 非对外公开的构造方法,只用于生产嵌套 Expr
+     *
+     * @param entityClass 本不应该需要的
+     */
+    private SearchWrapper(T entity, Class<T> entityClass, AtomicInteger paramNameSeq,
+                          MergeSegments mergeSegments) {
         super.setEntity(entity);
         super.setEntityClass(entityClass);
-        this.exprSelect = exprSelect;
         this.paramNameSeq = paramNameSeq;
         this.expression = mergeSegments;
-        this.extra = extra;
-        this.topK = topK;
-        this.vectorColumn = vectorColumn;
-        this.vectorValue = vectorValue;
-    }
-
-    public <R> LambdaSearchWrapper<T> vector(SFunction<T, R> column, R value) {
-        this.vectorColumn = column;
-        this.vectorValue = (List<?>) value;
-        return this;
     }
 
     @Override
@@ -97,15 +85,28 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
         return exprSelect.getStringValue();
     }
 
+    /**
+     * 返回一个支持 lambda 函数写法的 wrapper
+     */
+    public LambdaSearchWrapper<T> lambda() {
+        return new LambdaSearchWrapper<>(getEntity(), getEntityClass(), exprSelect, paramNameSeq,
+                expression, extra, topK, vectorColumn, vectorValue);
+    }
+
+    /**
+     * 用于生成嵌套 Expr
+     * <p>
+     * 故 ExprSelect 不向下传递
+     * </p>
+     */
     @Override
-    protected LambdaSearchWrapper<T> instance() {
-        return new LambdaSearchWrapper<>(getEntity(), getEntityClass(), null, paramNameSeq,
-                new MergeSegments(), extra, topK, vectorColumn, vectorValue);
+    protected SearchWrapper<T> instance() {
+        return new SearchWrapper<>(getEntity(), getEntityClass(), paramNameSeq, new MergeSegments());
     }
 
     @Override
     public void clear() {
         super.clear();
-        expression.clear();
+        exprSelect.toNull();
     }
 }

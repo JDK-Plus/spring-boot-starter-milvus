@@ -2,15 +2,16 @@ package plus.jdk.milvus;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import plus.jdk.milvus.collection.UserBlogVector;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.chat.ChatClient;
+import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.dao.UserBlogVectorDao;
 import plus.jdk.milvus.model.HNSWIIndexExtra;
-import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.util.Arrays;
@@ -72,11 +73,19 @@ public class UserBlogVectorServiceTest {
     @Test
     public void query() throws MilvusException {
         LambdaQueryWrapper<UserBlogVector> wrapper = new LambdaQueryWrapper<>();
-        LambdaQueryWrapper<UserBlogVector> jsonWrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserBlogVector::getUid, 2656274875L).or(jsonWrapper);
-        jsonWrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
-        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
-        log.info("{}", queryResults);
+        wrapper.eq(UserBlogVector::getUid, 2656274875L)
+                .or()
+                .ne(UserBlogVector::getUid, 1234567890L)
+                .or(jsonWrapper ->
+                        jsonWrapper
+                                .jsonContains(UserBlogVector::getBlogType, 1, "type")
+                                .jsonContainsAll(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type")
+                                .or()
+                                .jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("112", "312"), "tasd")
+                );
+        Assertions.assertEquals(wrapper.getExprSegment(), "(uid = 2656274875 OR uid != 1234567890 OR (JSON_CONTAINS (blogType['type'], 1) AND JSON_CONTAINS_ALL (blogType['type'], ['1','2']) OR JSON_CONTAINS_ANY (blogType['tasd'], ['112','312'])))", "");
+//        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
+        log.info("{}", wrapper.getExprSegment());
     }
 
     /**
