@@ -96,10 +96,10 @@ public class UserBlogVectorServiceTest {
         String text = "宝贝们！！没睡吧啊啊啊 刚出炉的九图 投票！喜欢图几";
         LambdaSearchWrapper<UserBlogVector> wrapper = new LambdaSearchWrapper<>();
         List<List<Float>> embedding = chatClient.getEmbedding(Collections.singletonList(text));
-        wrapper.vector(UserBlogVector::getBlogTextVector, embedding.get(0));
-        wrapper.setTopK(10);
-        wrapper.eq(UserBlogVector::getUid, 2656274875L);
-        wrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
+        wrapper.vector(UserBlogVector::getBlogTextVector, embedding.get(0))
+                .setTopK(10)
+                .eq(UserBlogVector::getUid, 2656274875L);
+        wrapper.jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
         List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper);
         log.info("{}", searchResults);
     }
