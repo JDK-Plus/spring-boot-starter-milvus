@@ -4,8 +4,8 @@ import io.milvus.grpc.DataType;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import lombok.Data;
-import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.global.VectorTypeHandler;
+import plus.jdk.milvus.toolkit.support.SFunction;
 
 import java.lang.reflect.Field;
 

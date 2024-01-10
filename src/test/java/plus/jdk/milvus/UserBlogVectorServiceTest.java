@@ -2,6 +2,7 @@ package plus.jdk.milvus;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,11 +73,19 @@ public class UserBlogVectorServiceTest {
     @Test
     public void query() throws MilvusException {
         LambdaQueryWrapper<UserBlogVector> wrapper = new LambdaQueryWrapper<>();
-        LambdaQueryWrapper<UserBlogVector> jsonWrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserBlogVector::getUid, 2656274875L).or(jsonWrapper);
-        jsonWrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
-        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
-        log.info("{}", queryResults);
+        wrapper.eq(UserBlogVector::getUid, 2656274875L)
+                .or()
+                .ne(UserBlogVector::getUid, 1234567890L)
+                .or(jsonWrapper ->
+                        jsonWrapper
+                                .jsonContains(UserBlogVector::getBlogType, 1, "type")
+                                .jsonContainsAll(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type")
+                                .or()
+                                .jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("112", "312"), "tasd")
+                );
+        Assertions.assertEquals(wrapper.getExprSegment(), "(uid = 2656274875 OR uid != 1234567890 OR (JSON_CONTAINS (blogType['type'], 1) AND JSON_CONTAINS_ALL (blogType['type'], ['1','2']) OR JSON_CONTAINS_ANY (blogType['tasd'], ['112','312'])))", "");
+//        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
+        log.info("{}", wrapper.getExprSegment());
     }
 
     /**
@@ -87,10 +96,10 @@ public class UserBlogVectorServiceTest {
         String text = "宝贝们！！没睡吧啊啊啊 刚出炉的九图 投票！喜欢图几";
         LambdaSearchWrapper<UserBlogVector> wrapper = new LambdaSearchWrapper<>();
         List<List<Float>> embedding = chatClient.getEmbedding(Collections.singletonList(text));
-        wrapper.vector(UserBlogVector::getBlogTextVector, embedding.get(0));
-        wrapper.setTopK(10);
-        wrapper.eq(UserBlogVector::getUid, 2656274875L);
-        wrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
+        wrapper.vector(UserBlogVector::getBlogTextVector, embedding.get(0))
+                .setTopK(10)
+                .eq(UserBlogVector::getUid, 2656274875L);
+        wrapper.jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
         List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper);
         log.info("{}", searchResults);
     }

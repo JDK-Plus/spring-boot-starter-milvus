@@ -19,17 +19,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
 import plus.jdk.milvus.annotation.VectorCollectionName;
-import plus.jdk.milvus.common.*;
+import plus.jdk.milvus.common.MilvusException;
+import plus.jdk.milvus.common.PropertyNamer;
+import plus.jdk.milvus.conditions.query.QueryWrapper;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.CollectionDefinition;
 import plus.jdk.milvus.model.ColumnDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.record.VectorModel;
+import plus.jdk.milvus.toolkit.CollectionUtils;
+import plus.jdk.milvus.toolkit.LambdaUtils;
+import plus.jdk.milvus.toolkit.support.LambdaMeta;
+import plus.jdk.milvus.toolkit.support.SFunction;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
@@ -169,7 +174,7 @@ public class MilvusClientService {
     public <T extends VectorModel<?>> boolean remove(Object pk, Class<T> clazz) throws MilvusException {
         CollectionDefinition collection = getTableDefinition(clazz);
         String columnName = collection.getPrimaryColumn().getName();
-        String expression = Operator.in.getIOperatorComputer().compute(columnName, new Object[]{pk}, null, clazz);
+        String expression = new QueryWrapper<T>().in(columnName, pk).getExprSegment();
         if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
@@ -182,8 +187,8 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
-        CollectionDefinition collection = getTableDefinition(wrapper.getEntityType());
-        String expression = wrapper.buildExpression(wrapper.getEntityType());
+        CollectionDefinition collection = getTableDefinition(wrapper.getEntityClass());
+        String expression = wrapper.getExprSelect();
         if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
@@ -341,14 +346,15 @@ public class MilvusClientService {
             fieldBuilder.withDescription(column.getDesc());
             fieldBuilder.withPartitionKey(column.getPartitionKey());
             fieldBuilder.withDataType(column.getDataType());
-            fieldBuilder.withPrimaryKey(column.getPrimary());
+            Boolean primary = column.getPrimary();
+            fieldBuilder.withPrimaryKey(primary);
             if (column.vectorColumn()) {
                 fieldBuilder.withDimension(column.getVectorDimension());
             }
             if (column.getDataType() == DataType.VarChar) {
                 fieldBuilder.withMaxLength(column.getMaxLength());
             }
-            if (column.getPrimary()) {
+            if (Boolean.TRUE.equals(primary)) {
                 fieldBuilder.withAutoID(true);
             }
             if (column.canBePartitionKey()) {
@@ -372,7 +378,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper) throws MilvusException {
-        return this.search(wrapper, wrapper.getEntityType());
+        return this.search(wrapper, wrapper.getEntityClass());
     }
 
     public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
@@ -396,7 +402,7 @@ public class MilvusClientService {
         builder.withMetricType(columnDefinition.getMetricType());
         builder.withOutFields(outFields);
         builder.withTopK(wrapper.getTopK());
-        String expression = wrapper.buildExpression(clazz);
+        String expression = wrapper.getExprSelect();
         if (!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
@@ -433,7 +439,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
-        Class<T> clazz = wrapper.getEntityType();
+        Class<T> clazz = wrapper.getEntityClass();
         CollectionDefinition collectionDefinition = getTableDefinition(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
@@ -458,7 +464,7 @@ public class MilvusClientService {
         if (wrapper.getOffset() != null) {
             builder.withOffset(wrapper.getOffset());
         }
-        String expression = wrapper.buildExpression(clazz);
+        String expression = wrapper.getExprSelect();
         if (!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
@@ -471,14 +477,14 @@ public class MilvusClientService {
         for (int i = 0; i < resultsWrapper.getRowRecords().size(); i++) {
             QueryResultsWrapper.RowRecord rowRecord = resultsWrapper.getRowRecords().get(i);
             T data = this.createInstance(clazz);
-            for (String columnName : rowRecord.getFieldValues().keySet()) {
+            rowRecord.getFieldValues().keySet().forEach(columnName -> {
                 ColumnDefinition column = collectionDefinition.getColumnByColumnName(columnName);
                 if (column == null) {
-                    continue;
+                    return;
                 }
                 ReflectionUtils.makeAccessible(column.getField());
                 ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
-            }
+            });
             resultRows.add(data);
         }
         return resultRows;

@@ -2,11 +2,11 @@ package plus.jdk.milvus.record;
 
 import io.milvus.grpc.LoadState;
 import plus.jdk.milvus.common.MilvusException;
-import plus.jdk.milvus.common.SFunction;
 import plus.jdk.milvus.global.MilvusClientService;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.selector.MilvusSelector;
+import plus.jdk.milvus.toolkit.support.SFunction;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
@@ -20,7 +20,7 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     private final Class<T> entityType;
     private MilvusClientService milvusClientService;
 
-    public VectorModelRepositoryImpl() {
+    protected VectorModelRepositoryImpl() {
         Type superClass = getClass().getGenericSuperclass();
         if (superClass instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) superClass;
@@ -41,7 +41,7 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     }
 
     public boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
-        wrapper.setEntityType(entityType);
+        wrapper.setEntityClass(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.batchRemove(wrapper);
     }
@@ -93,19 +93,19 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     }
 
     public List<T> search(LambdaSearchWrapper<T> wrapper) throws MilvusException {
-        wrapper.setEntityType(entityType);
+        wrapper.setEntityClass(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.search(wrapper);
     }
 
     public List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
-        wrapper.setEntityType(entityType);
+        wrapper.setEntityClass(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.query(wrapper);
     }
 
     public Page<T> queryPage(LambdaQueryWrapper<T> wrapper, Long page, Long pageSize) throws MilvusException {
-        wrapper.setEntityType(entityType);
+        wrapper.setEntityClass(entityType);
         milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
         return milvusClientService.queryPage(wrapper, page, pageSize);
     }
