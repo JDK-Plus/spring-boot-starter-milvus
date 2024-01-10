@@ -27,9 +27,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 IN (value.get(0), value.get(1), ...)
      * <p>例: in("id", Arrays.asList(1, 2, 3, 4, 5))</p>
-     *
+     * <ul>
      * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param column 字段
      * @param coll   数据集合
@@ -42,9 +43,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 IN (value.get(0), value.get(1), ...)
      * <p>例: in(true, "id", Arrays.asList(1, 2, 3, 4, 5))</p>
-     *
+     * <ul>
      * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param condition 执行条件
      * @param column    字段
@@ -56,9 +58,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 IN (v0, v1, ...)
      * <p>例: in("id", 1, 2, 3, 4, 5)</p>
-     *
-     * <li> 注意！当数组为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param column 字段
      * @param values 数据数组
@@ -71,9 +74,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 IN (v0, v1, ...)
      * <p>例: in(true, "id", 1, 2, 3, 4, 5)</p>
-     *
-     * <li> 注意！当数组为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param condition 执行条件
      * @param column    字段
@@ -85,9 +89,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 NOT IN (value.get(0), value.get(1), ...)
      * <p>例: notIn("id", Arrays.asList(1, 2, 3, 4, 5))</p>
-     *
-     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 NOT IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param column 字段
      * @param coll   数据集合
@@ -100,9 +105,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 NOT IN (value.get(0), value.get(1), ...)
      * <p>例: notIn(true, "id", Arrays.asList(1, 2, 3, 4, 5))</p>
-     *
-     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 NOT IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param condition 执行条件
      * @param column    字段
@@ -114,9 +120,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 NOT IN (v0, v1, ...)
      * <p>例: notIn("id", 1, 2, 3, 4, 5)</p>
-     *
-     * <li> 注意！当数组为 空或null 时, Expr会拼接为：WHERE (字段名 NOT IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param column 字段
      * @param values 数据数组
@@ -129,9 +136,10 @@ public interface Func<Children, R> extends Serializable {
     /**
      * 字段 NOT IN (v0, v1, ...)
      * <p>例: notIn(true, "id", 1, 2, 3, 4, 5)</p>
-     *
-     * <li> 注意！当数组为 空或null 时, Expr会拼接为：WHERE (字段名 NOT IN ()), 执行时报错</li>
+     * <ul>
+     * <li> 注意！当集合为 空或null 时, Expr会拼接为：WHERE (字段名 IN ()), 执行时报错</li>
      * <li> 若要在特定条件下不拼接, 可在 condition 条件中判断 </li>
+     * </ul>
      *
      * @param condition 执行条件
      * @param column    字段
@@ -347,6 +355,7 @@ public interface Func<Children, R> extends Serializable {
      * 字段 array_length(column) == value
      *
      * @param column 字段
+     * @param value  数量
      * @return children
      */
     default Children arrayLength(R column, Number value) {
@@ -358,6 +367,7 @@ public interface Func<Children, R> extends Serializable {
      *
      * @param condition 执行条件
      * @param column    字段
+     * @param value     数量
      * @return children
      */
     Children arrayLength(boolean condition, R column, Number value);

@@ -87,6 +87,8 @@ public class SearchWrapper<T extends VectorModel<? extends VectorModel<?>>> exte
 
     /**
      * 返回一个支持 lambda 函数写法的 wrapper
+     *
+     * @return LambdaSearchWrapper
      */
     public LambdaSearchWrapper<T> lambda() {
         return new LambdaSearchWrapper<>(getEntity(), getEntityClass(), exprSelect, paramNameSeq,

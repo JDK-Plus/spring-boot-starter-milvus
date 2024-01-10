@@ -29,6 +29,7 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<? extends Vect
      * <p>
      * 如果获取不到列信息，那么本次条件组装将会失败
      *
+     * @param column 列
      * @return 列
      * @throws MilvusException 获取不到列信息时抛出异常
      */

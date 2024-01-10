@@ -9,9 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import plus.jdk.milvus.collection.UserBlogVector;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.chat.ChatClient;
-import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.dao.UserBlogVectorDao;
 import plus.jdk.milvus.model.HNSWIIndexExtra;
+import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.util.Arrays;

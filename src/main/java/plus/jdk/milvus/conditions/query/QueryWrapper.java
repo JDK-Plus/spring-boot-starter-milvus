@@ -63,6 +63,8 @@ public class QueryWrapper<T extends VectorModel<? extends VectorModel<?>>> exten
 
     /**
      * 返回一个支持 lambda 函数写法的 wrapper
+     *
+     * @return LambdaQueryWrapper
      */
     public LambdaQueryWrapper<T> lambda() {
         return new LambdaQueryWrapper<>(getEntity(), getEntityClass(), exprSelect, paramNameSeq, expression, offset, limit);

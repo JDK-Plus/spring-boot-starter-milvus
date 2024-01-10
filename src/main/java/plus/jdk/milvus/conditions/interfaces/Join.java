@@ -44,7 +44,8 @@ public interface Join<Children> extends Serializable {
      * 拼接 Expr
      * <p>例1: apply("id = 1")</p>
      *
-     * @param values 数据数组
+     * @param applyExpr 自定义表达式
+     * @param values    数据数组
      * @return children
      */
     default Children apply(String applyExpr, Object... values) {
@@ -56,6 +57,7 @@ public interface Join<Children> extends Serializable {
      * <p>例1: apply("id = 1")</p>
      *
      * @param condition 执行条件
+     * @param applyExpr 自定义表达式
      * @param values    数据数组
      * @return children
      */

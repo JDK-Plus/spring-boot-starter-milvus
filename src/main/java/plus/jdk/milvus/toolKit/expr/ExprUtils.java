@@ -18,7 +18,8 @@ public abstract class ExprUtils implements Constants {
     /**
      * 用%连接like
      *
-     * @param str 原字符串
+     * @param str  原字符串
+     * @param type like 类型
      * @return like 的值
      */
     public static String concatLike(Object str, ExprLike type) {

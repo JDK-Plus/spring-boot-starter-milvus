@@ -10,6 +10,8 @@ public interface IExprSegment extends Serializable {
 
     /**
      * Expr 片段
+     *
+     * @return Expr片段
      */
     String getExprSegment();
 }

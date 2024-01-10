@@ -21,7 +21,9 @@ import java.util.function.Consumer;
 /**
  * 查询条件封装
  * <p>嵌套</p>
- * <li>泛型 Param 是具体需要运行函数的类(也是 wrapper 的子类)</li>
+ * <ul>
+ *     <li>泛型 Param 是具体需要运行函数的类(也是 wrapper 的子类)</li>
+ * </ul>
  */
 public interface Nested<Param, Children> extends Serializable {
 

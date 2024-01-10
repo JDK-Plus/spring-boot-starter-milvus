@@ -233,6 +233,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 内部自用
      * <p>NOT 关键词</p>
+     *
+     * @param condition 条件
+     * @return wrapper
      */
     protected Children not(boolean condition) {
         return maybeDo(condition, () -> appendExprSegments(NOT));
@@ -241,6 +244,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 内部自用
      * <p>拼接 AND</p>
+     *
+     * @param condition 条件
+     * @return wrapper
      */
     protected Children and(boolean condition) {
         return maybeDo(condition, () -> appendExprSegments(ExprKeyword.AND));
@@ -249,6 +255,13 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 内部自用
      * <p>拼接 LIKE 以及 值</p>
+     *
+     * @param condition 条件
+     * @param column    属性
+     * @param keyword   关键字
+     * @param exprLike  Expr 关键词
+     * @param val       条件值
+     * @return wrapper
      */
     protected Children likeValue(boolean condition, ExprKeyword keyword, R column, Object val, ExprLike exprLike) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), keyword,
@@ -262,6 +275,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param column      属性
      * @param exprKeyword Expr 关键词
      * @param val         条件值
+     * @return wrapper
      */
     protected Children addCondition(boolean condition, R column, ExprKeyword exprKeyword, Object val) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), exprKeyword,
@@ -272,6 +286,8 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * 多重嵌套查询条件
      *
      * @param condition 查询条件值
+     * @param consumer  消费者
+     * @return wrapper
      */
     protected Children addNestedCondition(boolean condition, Consumer<Children> consumer) {
         return maybeDo(condition, () -> {
@@ -283,6 +299,8 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
 
     /**
      * 子类返回一个自己的新对象
+     *
+     * @return wrapper
      */
     protected abstract Children instance();
 
@@ -347,6 +365,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * 获取in表达式 包含括号
      *
      * @param value 集合
+     * @return in表达式
      */
     protected IExprSegment inExpression(Collection<?> value) {
         if (CollectionUtils.isEmpty(value)) {
@@ -360,6 +379,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * 获取in表达式 包含括号
      *
      * @param values 数组
+     * @return in表达式
      */
     protected IExprSegment inExpression(Object[] values) {
         if (ArrayUtils.isEmpty(values)) {
@@ -372,7 +392,10 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 获取json表达式 包含括号
      *
-     * @param value 集合
+     * @param column     列
+     * @param value      集合
+     * @param identifier json key
+     * @return in表达式
      */
     protected IExprSegment jsonExpression(String column, Collection<?> value, Object... identifier) {
         if (CollectionUtils.isEmpty(value)) {
@@ -388,7 +411,10 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 获取json表达式 包含括号
      *
-     * @param value 集合
+     * @param column     列
+     * @param value      集合
+     * @param identifier json key
+     * @return in表达式
      */
     protected IExprSegment jsonExpression(String column, Object value, Object... identifier) {
         if (ObjectUtils.isEmpty(value)) {
@@ -403,7 +429,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 获取array表达式 包含括号
      *
-     * @param value 值
+     * @param column 列
+     * @param value  值
+     * @return in表达式
      */
     protected IExprSegment arrayExpression(String column, Object value) {
         if (ObjectUtils.isEmpty(value)) {
@@ -416,7 +444,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     /**
      * 获取array表达式 包含括号
      *
+     * @param column 列
      * @param values 数组
+     * @return in表达式
      */
     protected IExprSegment arrayExpression(String column, Object... values) {
         if (ArrayUtils.isEmpty(values)) {
@@ -466,6 +496,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
 
     /**
      * 获取 columnName
+     *
+     * @param column 列
+     * @return 表达式
      */
     protected final ColumnSegment columnToExprSegment(R column) {
         return () -> columnToString(column);
@@ -473,6 +506,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
 
     /**
      * 获取 columnName
+     *
+     * @param column 列
+     * @return 列名
      */
     protected String columnToString(R column) {
         return (String) column;
@@ -480,6 +516,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
 
     /**
      * 获取 columnNames
+     *
+     * @param columns 多列
+     * @return 列名
      */
     protected String columnsToString(R... columns) {
         return Arrays.stream(columns).map(this::columnToString).collect(joining(COMMA));
@@ -489,6 +528,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * 多字段转换为逗号 "," 分割字符串
      *
      * @param columns 多字段
+     * @return 列名
      */
     protected String columnsToString(List<R> columns) {
         return columns.stream().map(this::columnToString).collect(joining(COMMA));

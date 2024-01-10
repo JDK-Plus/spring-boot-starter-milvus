@@ -18,11 +18,15 @@ public abstract class Wrapper<T extends VectorModel<? extends VectorModel<?>>> i
 
     /**
      * 获取 MergeSegments
+     *
+     * @return 合并片段
      */
     public abstract MergeSegments getExpression();
 
     /**
      * 查询条件为空
+     *
+     * @return 是否为空
      */
     public boolean isEmptyOfWhere() {
         return isEmptyOfNormal();
@@ -30,6 +34,8 @@ public abstract class Wrapper<T extends VectorModel<? extends VectorModel<?>>> i
 
     /**
      * 查询条件不为空(包含entity)
+     *
+     * @return 是否不为空
      */
     public boolean isNonEmptyOfWhere() {
         return !isEmptyOfWhere();
@@ -37,6 +43,8 @@ public abstract class Wrapper<T extends VectorModel<? extends VectorModel<?>>> i
 
     /**
      * 查询条件为空(不包含entity)
+     *
+     * @return 是否为空
      */
     public boolean isEmptyOfNormal() {
         return CollectionUtils.isEmpty(getExpression().getNormal());
@@ -44,6 +52,8 @@ public abstract class Wrapper<T extends VectorModel<? extends VectorModel<?>>> i
 
     /**
      * 查询条件为空(不包含entity)
+     *
+     * @return 是否不为空
      */
     public boolean isNonEmptyOfNormal() {
         return !isEmptyOfNormal();

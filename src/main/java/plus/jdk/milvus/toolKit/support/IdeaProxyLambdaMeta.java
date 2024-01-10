@@ -11,7 +11,6 @@ import java.lang.reflect.Proxy;
 
 /**
  * 在 IDEA 的 Evaluate 中执行的 Lambda 表达式元数据需要使用该类处理元数据
- * <p>
  */
 public class IdeaProxyLambdaMeta implements LambdaMeta {
     private final Class<?> clazz;

@@ -66,7 +66,7 @@ public interface Compare<Children, R> extends Serializable {
     Children ne(boolean condition, R column, Object val);
 
     /**
-     * 大于 >
+     * 大于 &gt;
      *
      * @param column 字段
      * @param val    值
@@ -77,7 +77,7 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     /**
-     * 大于 >
+     * 大于 &gt;
      *
      * @param condition 执行条件
      * @param column    字段
@@ -87,7 +87,7 @@ public interface Compare<Children, R> extends Serializable {
     Children gt(boolean condition, R column, Object val);
 
     /**
-     * 大于等于 >=
+     * 大于等于 &gt;=
      *
      * @param column 字段
      * @param val    值
@@ -98,7 +98,7 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     /**
-     * 大于等于 >=
+     * 大于等于 &gt;=
      *
      * @param condition 执行条件
      * @param column    字段
@@ -108,7 +108,7 @@ public interface Compare<Children, R> extends Serializable {
     Children ge(boolean condition, R column, Object val);
 
     /**
-     * 小于 <
+     * 小于 &lt;
      *
      * @param column 字段
      * @param val    值
@@ -119,7 +119,7 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     /**
-     * 小于 <
+     * 小于 &lt;
      *
      * @param condition 执行条件
      * @param column    字段
@@ -129,7 +129,7 @@ public interface Compare<Children, R> extends Serializable {
     Children lt(boolean condition, R column, Object val);
 
     /**
-     * 小于等于 <=
+     * 小于等于 &lt;=
      *
      * @param column 字段
      * @param val    值
@@ -140,7 +140,7 @@ public interface Compare<Children, R> extends Serializable {
     }
 
     /**
-     * 小于等于 <=
+     * 小于等于 &lt;=
      *
      * @param condition 执行条件
      * @param column    字段

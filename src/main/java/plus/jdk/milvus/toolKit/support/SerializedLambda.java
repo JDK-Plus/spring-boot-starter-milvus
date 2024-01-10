@@ -7,7 +7,6 @@ import java.io.*;
 
 /**
  * 当前类是 {@link java.lang.invoke.SerializedLambda } 的一个镜像
- * <p>
  */
 @SuppressWarnings("ALL")
 public class SerializedLambda implements Serializable {

@@ -65,13 +65,15 @@ public final class StringUtils {
      * 对象转为字符串去除左右空格
      *
      * @param o 带转换对象
-     * @return
+     * @return 去除左右空格
      */
     public static String toStringTrim(Object o) {
         return String.valueOf(o).trim();
     }
 
     /**
+     * @param cs 字符
+     * @return !isBlank(CharSequence)
      * @see #isBlank(CharSequence)
      */
     public static boolean isNotBlank(CharSequence cs) {
@@ -88,9 +90,10 @@ public final class StringUtils {
 
     /**
      * 判断字符串是不是驼峰命名
-     *
+     * <ul>
      * <li> 包含 '_' 不算 </li>
      * <li> 首字母大写的不算 </li>
+     * </ul>
      *
      * @param str 字符串
      * @return 结果
@@ -254,6 +257,10 @@ public final class StringUtils {
 
     /**
      * 拼接字符串第二个字符串第一个字母大写
+     *
+     * @param concatStr 第一个字符串
+     * @param str       第二个字符串
+     * @return 拼接字符串第二个字符串第一个字母大写
      */
     public static String concatCapitalize(String concatStr, final String str) {
         if (isBlank(concatStr)) {
@@ -338,7 +345,6 @@ public final class StringUtils {
      * <code>null</code>s are handled without exceptions. Two <code>null</code>
      * references are considered to be equal. The comparison is case sensitive.
      * </p>
-     * <p>
      * <pre>
      * StringUtils.endsWith(null, null)      = true
      * StringUtils.endsWith(null, "abcdef")  = false
@@ -346,7 +352,6 @@ public final class StringUtils {
      * StringUtils.endsWith("def", "abcdef") = true
      * StringUtils.endsWith("def", "ABCDEF") = false
      * </pre>
-     * </p>
      *
      * @param str    the String to check, may be null
      * @param suffix the suffix to find, may be null
@@ -538,6 +543,7 @@ public final class StringUtils {
      * </ul>
      *
      * @param str 字符串
+     * @return 去除空白后字符串
      */
     public static String replaceAllBlank(String str) {
         Matcher matcher = REPLACE_BLANK.matcher(str);

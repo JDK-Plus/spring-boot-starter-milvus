@@ -25,6 +25,8 @@ public class SharedString implements Serializable {
 
     /**
      * SharedString 里是 ""
+     *
+     * @return SharedString 里是 ""
      */
     public static SharedString emptyString() {
         return new SharedString(StringPool.EMPTY);
