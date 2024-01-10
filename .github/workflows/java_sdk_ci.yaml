@@ -22,7 +22,7 @@ jobs:
           echo "build jar"
           git submodule update --init
           mvn clean versions:set -DnewVersion=2.2.12
-          mvn clean install -Dmaven.test.skip=true
+          mvn clean install -Dmaven.test.skip=true -Dgpg.skip
 
       - name: Upload logs
         if: ${{ always() }}

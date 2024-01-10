@@ -15,6 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <gson.version>2.10.1</gson.version>
+        <commons-text.version>1.11.0</commons-text.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <okhttp.version>4.12.0</okhttp.version>
         <milvus-sdk.version>2.3.4</milvus-sdk.version><!-- CURRENT_milvus_VERSION -->
@@ -134,7 +135,7 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-core-http-netty</artifactId>
-            <version>1.13.7</version> <!-- {x-version-update;com.azure:azure-core-http-netty;dependency} -->
+            <version>1.13.11</version> <!-- {x-version-update;com.azure:azure-core-http-netty;dependency} -->
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -150,7 +151,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -175,7 +176,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -189,7 +190,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
