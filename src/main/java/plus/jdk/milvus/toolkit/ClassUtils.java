@@ -3,8 +3,6 @@ package plus.jdk.milvus.toolkit;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,6 +13,15 @@ import java.util.List;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassUtils {
+    private static ClassLoader systemClassLoader;
+
+    static {
+        try {
+            systemClassLoader = ClassLoader.getSystemClassLoader();
+        } catch (SecurityException ignored) {
+            // AccessControlException on Google App Engine
+        }
+    }
 
     /**
      * 代理 class 的名称
@@ -64,5 +71,52 @@ public final class ClassUtils {
     public static Class<?> getUserClass(Class<?> clazz) {
         Assert.notNull(clazz, "Class must not be null");
         return isProxy(clazz) ? clazz.getSuperclass() : clazz;
+    }
+
+    private static Class<?> loadClass(String className, ClassLoader[] classLoaders) throws ClassNotFoundException {
+        for (ClassLoader classLoader : classLoaders) {
+            if (classLoader != null) {
+                try {
+                    return Class.forName(className, true, classLoader);
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                }
+            }
+        }
+        throw new ClassNotFoundException("Cannot find class: " + className);
+    }
+
+    /**
+     * <p>
+     * 请仅在确定类存在的情况下调用该方法
+     * </p>
+     *
+     * @param name 类名称
+     * @return 返回转换后的 Class
+     */
+    public static Class<?> toClassConfident(String name) {
+        return toClassConfident(name, null);
+    }
+
+    /**
+     * @param name        类名称
+     * @param classLoader 类加载器
+     * @return 返回转换后的 Class
+     */
+    public static Class<?> toClassConfident(String name, ClassLoader classLoader) {
+        try {
+            return loadClass(name, getClassLoaders(classLoader));
+        } catch (ClassNotFoundException e) {
+            throw ExceptionUtils.mpe("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法", e);
+        }
+    }
+
+    private static ClassLoader[] getClassLoaders(ClassLoader classLoader) {
+        return new ClassLoader[]{
+                classLoader,
+                Thread.currentThread().getContextClassLoader(),
+                ClassUtils.class.getClassLoader(),
+                systemClassLoader
+        };
     }
 }

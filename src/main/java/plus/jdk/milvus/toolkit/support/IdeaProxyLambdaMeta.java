@@ -34,6 +34,11 @@ public class IdeaProxyLambdaMeta implements LambdaMeta {
     }
 
     @Override
+    public Class<?> getInstantiatedClass() {
+        return clazz;
+    }
+
+    @Override
     public String toString() {
         return clazz.getSimpleName() + "::" + name;
     }
