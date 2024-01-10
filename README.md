@@ -20,7 +20,7 @@ This component is a Milvus component written in the style of mybatis-plus. It al
 <dependency>
     <groupId>plus.jdk</groupId>
     <artifactId>spring-boot-starter-milvus</artifactId>
-    <version>1.0.8</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -110,8 +110,6 @@ import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.chat.ChatClient;
 import plus.jdk.milvus.dao.UserBlogVectorDao;
 import plus.jdk.milvus.model.HNSWIIndexExtra;
-import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
-import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -167,9 +165,16 @@ public class UserBlogVectorServiceTest {
     @Test
     public void query() throws MilvusException {
         LambdaQueryWrapper<UserBlogVector> wrapper = new LambdaQueryWrapper<>();
-        LambdaQueryWrapper<UserBlogVector> jsonWrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(UserBlogVector::getUid, 2656274875L).or(jsonWrapper);
-        jsonWrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
+        wrapper.eq(UserBlogVector::getUid, 2656274875L)
+                .or()
+                .ne(UserBlogVector::getUid, 1234567890L)
+                .or(jsonWrapper ->
+                        jsonWrapper
+                                .jsonContains(UserBlogVector::getBlogType, 1, "type")
+                                .jsonContainsAll(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type")
+                                .or()
+                                .jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("112", "312"), "tasd")
+                );
         List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
         log.info("{}", queryResults);
     }
@@ -185,7 +190,7 @@ public class UserBlogVectorServiceTest {
         wrapper.vector(UserBlogVector::getBlogTextVector, embedding.get(0));
         wrapper.setTopK(10);
         wrapper.eq(UserBlogVector::getUid, 2656274875L);
-        wrapper.contains_any(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
+        wrapper.jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
         List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper);
         log.info("{}", searchResults);
     }
