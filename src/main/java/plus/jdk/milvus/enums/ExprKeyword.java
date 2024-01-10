@@ -3,7 +3,7 @@ package plus.jdk.milvus.enums;
 
 import lombok.AllArgsConstructor;
 import plus.jdk.milvus.conditions.IExprSegment;
-import plus.jdk.milvus.toolKit.StringPool;
+import plus.jdk.milvus.toolkit.StringPool;
 
 /**
  * Expr 保留关键字枚举

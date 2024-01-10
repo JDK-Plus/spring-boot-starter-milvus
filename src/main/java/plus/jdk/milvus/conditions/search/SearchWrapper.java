@@ -8,7 +8,7 @@ import plus.jdk.milvus.conditions.SharedString;
 import plus.jdk.milvus.conditions.segments.MergeSegments;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.toolKit.support.SFunction;
+import plus.jdk.milvus.toolkit.support.SFunction;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SearchWrapper<T extends VectorModel<? extends VectorModel<?>>> extends AbstractWrapper<T, String, SearchWrapper<T>>
         implements Search<SearchWrapper<T>, T, String> {
-
+    private static final long serialVersionUID = -1L;
     /**
      * 查询字段
      */

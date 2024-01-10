@@ -1,13 +1,16 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
-import plus.jdk.milvus.toolKit.reflect.IGenericTypeResolver;
-import plus.jdk.milvus.toolKit.reflect.SpringReflectionHelper;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import plus.jdk.milvus.toolkit.reflect.IGenericTypeResolver;
+import plus.jdk.milvus.toolkit.reflect.SpringReflectionHelper;
 
 /**
  * 泛型类工具（用于隔离Spring的代码）
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GenericTypeUtils {
-    private static IGenericTypeResolver GENERIC_TYPE_RESOLVER;
+    private static IGenericTypeResolver genericTypeResolver;
 
     /**
      * 获取泛型工具助手
@@ -17,11 +20,11 @@ public class GenericTypeUtils {
      * @return 泛型工具助手
      */
     public static Class<?>[] resolveTypeArguments(final Class<?> clazz, final Class<?> genericIfc) {
-        if (null == GENERIC_TYPE_RESOLVER) {
+        if (null == genericTypeResolver) {
             // 直接使用 spring 静态方法，减少对象创建
             return SpringReflectionHelper.resolveTypeArguments(clazz, genericIfc);
         }
-        return GENERIC_TYPE_RESOLVER.resolveTypeArguments(clazz, genericIfc);
+        return genericTypeResolver.resolveTypeArguments(clazz, genericIfc);
     }
 
     /**
@@ -30,6 +33,6 @@ public class GenericTypeUtils {
      * @param genericTypeResolver 通用类型解析器
      */
     public static void setGenericTypeResolver(IGenericTypeResolver genericTypeResolver) {
-        GENERIC_TYPE_RESOLVER = genericTypeResolver;
+        GenericTypeUtils.genericTypeResolver = genericTypeResolver;
     }
 }

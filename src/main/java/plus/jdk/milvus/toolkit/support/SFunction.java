@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit.support;
+package plus.jdk.milvus.toolkit.support;
 
 import java.io.Serializable;
 import java.util.function.Function;

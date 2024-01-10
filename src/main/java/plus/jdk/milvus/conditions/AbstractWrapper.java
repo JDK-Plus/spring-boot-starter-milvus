@@ -16,10 +16,10 @@ import plus.jdk.milvus.conditions.segments.MergeSegments;
 import plus.jdk.milvus.enums.ExprKeyword;
 import plus.jdk.milvus.enums.ExprLike;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.toolKit.CollectionUtils;
-import plus.jdk.milvus.toolKit.Constants;
-import plus.jdk.milvus.toolKit.StringUtils;
-import plus.jdk.milvus.toolKit.expr.ExprUtils;
+import plus.jdk.milvus.toolkit.CollectionUtils;
+import plus.jdk.milvus.toolkit.Constants;
+import plus.jdk.milvus.toolkit.StringUtils;
+import plus.jdk.milvus.toolkit.expr.ExprUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,19 +31,19 @@ import java.util.function.Consumer;
 import static java.util.stream.Collectors.joining;
 import static plus.jdk.milvus.enums.ExprKeyword.*;
 import static plus.jdk.milvus.enums.WrapperKeyword.APPLY;
-import static plus.jdk.milvus.toolKit.StringPool.*;
+import static plus.jdk.milvus.toolkit.StringPool.*;
 
 /**
  * 查询条件封装
  */
 @SuppressWarnings({"unchecked"})
-public abstract class AbstractWrapper<T extends VectorModel<? extends VectorModel<?>>, R, Children extends AbstractWrapper<T, R, Children>> extends Wrapper<T>
-        implements Compare<Children, R>, Nested<Children, Children>, Join<Children>, Func<Children, R> {
+public abstract class AbstractWrapper<T extends VectorModel<? extends VectorModel<?>>, R, C extends AbstractWrapper<T, R, C>> extends Wrapper<T>
+        implements Compare<C, R>, Nested<C, C>, Join<C>, Func<C, R> {
 
     /**
      * 占位符
      */
-    protected final Children typedThis = (Children) this;
+    protected final C typedThis = (C) this;
     /**
      * 必要度量
      */
@@ -76,7 +76,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
         return entity;
     }
 
-    public Children setEntity(T entity) {
+    public C setEntity(T entity) {
         this.entity = entity;
         return typedThis;
     }
@@ -88,7 +88,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
         return entityClass;
     }
 
-    public Children setEntityClass(Class<T> entityClass) {
+    public C setEntityClass(Class<T> entityClass) {
         if (entityClass != null) {
             this.entityClass = entityClass;
         }
@@ -96,137 +96,137 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
     }
 
     @Override
-    public Children eq(boolean condition, R column, Object val) {
+    public C eq(boolean condition, R column, Object val) {
         return addCondition(condition, column, EQ, val);
     }
 
     @Override
-    public Children ne(boolean condition, R column, Object val) {
+    public C ne(boolean condition, R column, Object val) {
         return addCondition(condition, column, NE, val);
     }
 
     @Override
-    public Children gt(boolean condition, R column, Object val) {
+    public C gt(boolean condition, R column, Object val) {
         return addCondition(condition, column, GT, val);
     }
 
     @Override
-    public Children ge(boolean condition, R column, Object val) {
+    public C ge(boolean condition, R column, Object val) {
         return addCondition(condition, column, GE, val);
     }
 
     @Override
-    public Children lt(boolean condition, R column, Object val) {
+    public C lt(boolean condition, R column, Object val) {
         return addCondition(condition, column, LT, val);
     }
 
     @Override
-    public Children le(boolean condition, R column, Object val) {
+    public C le(boolean condition, R column, Object val) {
         return addCondition(condition, column, LE, val);
     }
 
     @Override
-    public Children likeRight(boolean condition, R column, Object val) {
+    public C likeRight(boolean condition, R column, Object val) {
         return likeValue(condition, LIKE, column, val, ExprLike.RIGHT);
     }
 
     @Override
-    public Children notLikeRight(boolean condition, R column, Object val) {
+    public C notLikeRight(boolean condition, R column, Object val) {
         return likeValue(condition, NOT_LIKE, column, val, ExprLike.RIGHT);
     }
 
     @Override
-    public Children and(boolean condition, Consumer<Children> consumer) {
+    public C and(boolean condition, Consumer<C> consumer) {
         return and(condition).addNestedCondition(condition, consumer);
     }
 
     @Override
-    public Children or(boolean condition, Consumer<Children> consumer) {
+    public C or(boolean condition, Consumer<C> consumer) {
         return or(condition).addNestedCondition(condition, consumer);
     }
 
     @Override
-    public Children not(boolean condition, Consumer<Children> consumer) {
+    public C not(boolean condition, Consumer<C> consumer) {
         return not(condition).addNestedCondition(condition, consumer);
     }
 
     @Override
-    public Children or(boolean condition) {
+    public C or(boolean condition) {
         return maybeDo(condition, () -> appendExprSegments(OR));
     }
 
     @Override
-    public Children apply(boolean condition, String applyExpr, Object... values) {
+    public C apply(boolean condition, String applyExpr, Object... values) {
         return maybeDo(condition, () -> appendExprSegments(APPLY, () -> formatExprMaybeWithParam(applyExpr, values)));
     }
 
     @Override
-    public Children in(boolean condition, R column, Collection<?> coll) {
+    public C in(boolean condition, R column, Collection<?> coll) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), IN, inExpression(coll)));
     }
 
     @Override
-    public Children in(boolean condition, R column, Object... values) {
+    public C in(boolean condition, R column, Object... values) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), IN, inExpression(values)));
     }
 
     @Override
-    public Children notIn(boolean condition, R column, Collection<?> coll) {
+    public C notIn(boolean condition, R column, Collection<?> coll) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), NOT_IN, inExpression(coll)));
     }
 
     @Override
-    public Children notIn(boolean condition, R column, Object... values) {
+    public C notIn(boolean condition, R column, Object... values) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), NOT_IN, inExpression(values)));
     }
 
     @Override
-    public Children func(boolean condition, Consumer<Children> consumer) {
+    public C func(boolean condition, Consumer<C> consumer) {
         return maybeDo(condition, () -> consumer.accept(typedThis));
     }
 
     @Override
-    public Children jsonContains(boolean condition, R column, Object value, Object... identifier) {
+    public C jsonContains(boolean condition, R column, Object value, Object... identifier) {
         return maybeDo(condition, () -> appendExprSegments(JSON, jsonExpression(columnToString(column), value, identifier)));
     }
 
     @Override
-    public Children jsonContainsAll(boolean condition, R column, Collection<?> coll, Object... identifier) {
+    public C jsonContainsAll(boolean condition, R column, Collection<?> coll, Object... identifier) {
         return maybeDo(condition, () -> appendExprSegments(JSON_ALL, jsonExpression(columnToString(column), coll, identifier)));
     }
 
     @Override
-    public Children jsonContainsAny(boolean condition, R column, Collection<?> coll, Object... identifier) {
+    public C jsonContainsAny(boolean condition, R column, Collection<?> coll, Object... identifier) {
         return maybeDo(condition, () -> appendExprSegments(JSON_ANY, jsonExpression(columnToString(column), coll, identifier)));
     }
 
     @Override
-    public Children arrayContains(boolean condition, R column, Object value) {
+    public C arrayContains(boolean condition, R column, Object value) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY, arrayExpression(columnToString(column), value)));
     }
 
     @Override
-    public Children arrayContainsAll(boolean condition, R column, Collection<?> coll) {
+    public C arrayContainsAll(boolean condition, R column, Collection<?> coll) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY_ALL, arrayExpression(columnToString(column), coll)));
     }
 
     @Override
-    public Children arrayContainsAll(boolean condition, R column, Object... values) {
+    public C arrayContainsAll(boolean condition, R column, Object... values) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY_ALL, arrayExpression(columnToString(column), values)));
     }
 
     @Override
-    public Children arrayContainsAny(boolean condition, R column, Collection<?> coll) {
+    public C arrayContainsAny(boolean condition, R column, Collection<?> coll) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY_ANY, arrayExpression(columnToString(column), coll)));
     }
 
     @Override
-    public Children arrayContainsAny(boolean condition, R column, Object... values) {
+    public C arrayContainsAny(boolean condition, R column, Object... values) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY_ANY, arrayExpression(columnToString(column), values)));
     }
 
     @Override
-    public Children arrayLength(boolean condition, R column, Number value) {
+    public C arrayLength(boolean condition, R column, Number value) {
         return maybeDo(condition, () -> appendExprSegments(ARRAY_LENGTH, columnToExprSegment(column), value::toString));
     }
 
@@ -237,7 +237,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param condition 条件
      * @return wrapper
      */
-    protected Children not(boolean condition) {
+    protected C not(boolean condition) {
         return maybeDo(condition, () -> appendExprSegments(NOT));
     }
 
@@ -248,7 +248,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param condition 条件
      * @return wrapper
      */
-    protected Children and(boolean condition) {
+    protected C and(boolean condition) {
         return maybeDo(condition, () -> appendExprSegments(ExprKeyword.AND));
     }
 
@@ -263,7 +263,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param val       条件值
      * @return wrapper
      */
-    protected Children likeValue(boolean condition, ExprKeyword keyword, R column, Object val, ExprLike exprLike) {
+    protected C likeValue(boolean condition, ExprKeyword keyword, R column, Object val, ExprLike exprLike) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), keyword,
                 () -> ExprUtils.concatLike(val, exprLike)));
     }
@@ -277,7 +277,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param val         条件值
      * @return wrapper
      */
-    protected Children addCondition(boolean condition, R column, ExprKeyword exprKeyword, Object val) {
+    protected C addCondition(boolean condition, R column, ExprKeyword exprKeyword, Object val) {
         return maybeDo(condition, () -> appendExprSegments(columnToExprSegment(column), exprKeyword,
                 () -> formatParam(val)));
     }
@@ -289,9 +289,9 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param consumer  消费者
      * @return wrapper
      */
-    protected Children addNestedCondition(boolean condition, Consumer<Children> consumer) {
+    protected C addNestedCondition(boolean condition, Consumer<C> consumer) {
         return maybeDo(condition, () -> {
-            final Children instance = instance();
+            final C instance = instance();
             consumer.accept(instance);
             appendExprSegments(APPLY, instance);
         });
@@ -302,7 +302,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      *
      * @return wrapper
      */
-    protected abstract Children instance();
+    protected abstract C instance();
 
     /**
      * 格式化 Expr
@@ -354,7 +354,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @param something 做什么
      * @return Children
      */
-    protected final Children maybeDo(boolean condition, DoSomething something) {
+    protected final C maybeDo(boolean condition, DoSomething something) {
         if (condition) {
             something.doIt();
         }
@@ -536,7 +536,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
 
     @Override
     @SuppressWarnings("all")
-    public Children clone() {
+    public C clone() {
         return SerializationUtils.clone(typedThis);
     }
 

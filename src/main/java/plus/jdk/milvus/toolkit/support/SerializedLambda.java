@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit.support;
+package plus.jdk.milvus.toolkit.support;
 
 
 import plus.jdk.milvus.common.MilvusException;
@@ -13,15 +13,8 @@ public class SerializedLambda implements Serializable {
     private static final long serialVersionUID = 8025925345765570181L;
 
     private Class<?> capturingClass;
-    private String functionalInterfaceClass;
-    private String functionalInterfaceMethodName;
-    private String functionalInterfaceMethodSignature;
-    private String implClass;
     private String implMethodName;
-    private String implMethodSignature;
-    private int implMethodKind;
     private String instantiatedMethodType;
-    private Object[] capturedArgs;
 
     public static SerializedLambda extract(Serializable serializable) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();

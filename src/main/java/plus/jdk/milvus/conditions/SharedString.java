@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import plus.jdk.milvus.toolKit.StringPool;
+import plus.jdk.milvus.toolkit.StringPool;
 
 import java.io.Serializable;
 

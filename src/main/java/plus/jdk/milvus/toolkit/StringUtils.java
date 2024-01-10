@@ -1,7 +1,9 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
-import plus.jdk.milvus.toolKit.expr.StringEscape;
-import plus.jdk.milvus.toolKit.support.BiIntFunction;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import plus.jdk.milvus.toolkit.expr.StringEscape;
+import plus.jdk.milvus.toolkit.support.BiIntFunction;
 
 import java.util.Collection;
 import java.util.regex.Matcher;
@@ -12,6 +14,7 @@ import static java.util.stream.Collectors.joining;
 /**
  * String 工具类
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StringUtils {
 
     /**
@@ -22,10 +25,6 @@ public final class StringUtils {
      * 下划线字符
      */
     public static final char UNDERLINE = '_';
-    /**
-     * MP 内定义的 SQL 占位符表达式，匹配诸如 {0},{1},{2} ... 的形式
-     */
-    public final static Pattern MP_SQL_PLACE_HOLDER = Pattern.compile("[{](?<idx>\\d+)}");
     /**
      * 验证字符串是否是数据库字段
      */
@@ -148,32 +147,6 @@ public final class StringUtils {
     }
 
     /**
-     * 字符串下划线转驼峰格式
-     *
-     * @param param 需要转换的字符串
-     * @return 转换好的字符串
-     */
-    public static String underlineToCamel(String param) {
-        if (isBlank(param)) {
-            return StringPool.EMPTY;
-        }
-        String temp = param.toLowerCase();
-        int len = temp.length();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            char c = temp.charAt(i);
-            if (c == UNDERLINE) {
-                if (++i < len) {
-                    sb.append(Character.toUpperCase(temp.charAt(i)));
-                }
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
      * 首字母转换小写
      *
      * @param param 需要转换的字符串
@@ -212,7 +185,9 @@ public final class StringUtils {
      * @return 返回字符串构建起
      */
     public static StringBuilder replace(CharSequence src, Pattern ptn, BiIntFunction<Matcher, CharSequence> replacer) {
-        int idx = 0, last = 0, len = src.length();
+        int idx = 0;
+        int last = 0;
+        int len = src.length();
         Matcher m = ptn.matcher(src);
         StringBuilder sb = new StringBuilder();
 
@@ -385,168 +360,5 @@ public final class StringUtils {
         }
         int strOffset = str.length() - suffix.length();
         return str.regionMatches(ignoreCase, strOffset, suffix, 0, suffix.length());
-    }
-
-    /**
-     * 是否为CharSequence类型
-     *
-     * @param clazz class
-     * @return true 为是 CharSequence 类型
-     */
-    public static boolean isCharSequence(Class<?> clazz) {
-        return clazz != null && CharSequence.class.isAssignableFrom(clazz);
-    }
-
-    /**
-     * 前n个首字母小写,之后字符大小写的不变
-     *
-     * @param rawString 需要处理的字符串
-     * @param index     多少个字符(从左至右)
-     * @return ignore
-     */
-    public static String prefixToLower(String rawString, int index) {
-        StringBuilder field = new StringBuilder();
-        field.append(rawString.substring(0, index).toLowerCase());
-        field.append(rawString.substring(index));
-        return field.toString();
-    }
-
-    /**
-     * 删除字符前缀之后,首字母小写,之后字符大小写的不变
-     * <p>StringUtils.removePrefixAfterPrefixToLower( "isUser", 2 )     = user</p>
-     * <p>StringUtils.removePrefixAfterPrefixToLower( "isUserInfo", 2 ) = userInfo</p>
-     *
-     * @param rawString 需要处理的字符串
-     * @param index     删除多少个字符(从左至右)
-     * @return ignore
-     */
-    public static String removePrefixAfterPrefixToLower(String rawString, int index) {
-        return prefixToLower(rawString.substring(index), 1);
-    }
-
-    /**
-     * 驼峰转连字符
-     * <p>StringUtils.camelToHyphen( "managerAdminUserService" ) = manager-admin-user-service</p>
-     *
-     * @param input ignore
-     * @return 以'-'分隔
-     * @see <a href="https://github.com/krasa/StringManipulation">document</a>
-     */
-    public static String camelToHyphen(String input) {
-        return wordsToHyphenCase(wordsAndHyphenAndCamelToConstantCase(input));
-    }
-
-    private static String wordsAndHyphenAndCamelToConstantCase(String input) {
-        StringBuilder buf = new StringBuilder();
-        char previousChar = ' ';
-        char[] chars = input.toCharArray();
-        for (char c : chars) {
-            boolean isUpperCaseAndPreviousIsLowerCase = (Character.isLowerCase(previousChar)) && (Character.isUpperCase(c));
-
-            boolean previousIsWhitespace = Character.isWhitespace(previousChar);
-            boolean lastOneIsNotUnderscore = (buf.length() > 0) && (buf.charAt(buf.length() - 1) != '_');
-            boolean isNotUnderscore = c != '_';
-            if (lastOneIsNotUnderscore && (isUpperCaseAndPreviousIsLowerCase || previousIsWhitespace)) {
-                buf.append(StringPool.UNDERSCORE);
-            } else if ((Character.isDigit(previousChar) && Character.isLetter(c))) {
-                buf.append(UNDERLINE);
-            }
-            if ((shouldReplace(c)) && (lastOneIsNotUnderscore)) {
-                buf.append(UNDERLINE);
-            } else if (!Character.isWhitespace(c) && (isNotUnderscore || lastOneIsNotUnderscore)) {
-                buf.append(Character.toUpperCase(c));
-            }
-            previousChar = c;
-        }
-        if (Character.isWhitespace(previousChar)) {
-            buf.append(StringPool.UNDERSCORE);
-        }
-        return buf.toString();
-    }
-
-    private static boolean shouldReplace(char c) {
-        return (c == '.') || (c == '_') || (c == '-');
-    }
-
-    private static String wordsToHyphenCase(String s) {
-        StringBuilder buf = new StringBuilder();
-        char lastChar = 'a';
-        for (char c : s.toCharArray()) {
-            if ((Character.isWhitespace(lastChar)) && (!Character.isWhitespace(c))
-                    && ('-' != c) && (buf.length() > 0)
-                    && (buf.charAt(buf.length() - 1) != '-')) {
-                buf.append(StringPool.DASH);
-            }
-            if ('_' == c) {
-                buf.append(StringPool.DASH);
-            } else if ('.' == c) {
-                buf.append(StringPool.DASH);
-            } else if (!Character.isWhitespace(c)) {
-                buf.append(Character.toLowerCase(c));
-            }
-            lastChar = c;
-        }
-        if (Character.isWhitespace(lastChar)) {
-            buf.append(StringPool.DASH);
-        }
-        return buf.toString();
-    }
-
-    /**
-     * <p>比较两个字符串，相同则返回true。字符串可为null</p>
-     *
-     * <p>对字符串大小写敏感</p>
-     *
-     * <pre>
-     * StringUtils.equals(null, null)   = true
-     * StringUtils.equals(null, "abc")  = false
-     * StringUtils.equals("abc", null)  = false
-     * StringUtils.equals("abc", "abc") = true
-     * StringUtils.equals("abc", "ABC") = false
-     * </pre>
-     *
-     * @param cs1 第一个字符串, 可为 {@code null}
-     * @param cs2 第二个字符串, 可为 {@code null}
-     * @return {@code true} 如果两个字符串相同, 或者都为 {@code null}
-     * @see Object#equals(Object)
-     */
-    public static boolean equals(final CharSequence cs1, final CharSequence cs2) {
-        if (cs1 == cs2) {
-            return true;
-        }
-        if (cs1 == null || cs2 == null) {
-            return false;
-        }
-        if (cs1.length() != cs2.length()) {
-            return false;
-        }
-        if (cs1 instanceof String && cs2 instanceof String) {
-            return cs1.equals(cs2);
-        }
-        // Step-wise comparison
-        final int length = cs1.length();
-        for (int i = 0; i < length; i++) {
-            if (cs1.charAt(i) != cs2.charAt(i)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * 字符串去除空白内容：
-     * <ul>
-     *     <li>\n 回车</li>
-     *     <li>\t 水平制表符</li>
-     *     <li>\s 空格</li>
-     *     <li>\r 换行</li>
-     * </ul>
-     *
-     * @param str 字符串
-     * @return 去除空白后字符串
-     */
-    public static String replaceAllBlank(String str) {
-        Matcher matcher = REPLACE_BLANK.matcher(str);
-        return matcher.replaceAll("");
     }
 }

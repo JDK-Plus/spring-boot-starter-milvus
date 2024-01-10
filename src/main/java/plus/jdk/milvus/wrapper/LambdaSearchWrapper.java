@@ -9,8 +9,9 @@ import plus.jdk.milvus.conditions.search.Search;
 import plus.jdk.milvus.conditions.segments.MergeSegments;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.toolKit.support.SFunction;
+import plus.jdk.milvus.toolkit.support.SFunction;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,7 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Lambda 更新封装
  */
 public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>> extends AbstractLambdaWrapper<T, LambdaSearchWrapper<T>>
-        implements Search<LambdaSearchWrapper<T>, T, SFunction<T, ?>> {
+        implements Search<LambdaSearchWrapper<T>, T, SFunction<T, ?>>, Serializable {
+
+    private static final long serialVersionUID = -1L;
 
     /**
      * 额外的索引查询参数
@@ -54,7 +57,7 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     @Getter
     @Setter
     @Accessors(chain = true)
-    private List<?> vectorValue;
+    private transient List<?> vectorValue;
 
     private SharedString exprSelect = new SharedString();
 

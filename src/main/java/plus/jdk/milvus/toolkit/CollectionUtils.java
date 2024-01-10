@@ -1,5 +1,8 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 import java.util.function.Function;
@@ -7,6 +10,7 @@ import java.util.function.Function;
 /**
  * Collection工具类
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CollectionUtils {
 
     private static final int MAX_POWER_OF_TWO = 1 << (Integer.SIZE - 2);
@@ -60,7 +64,7 @@ public class CollectionUtils {
      * @see com.google.common.collect.Maps#newHashMap()
      * @since 3.4.0
      */
-    public static <K, V> HashMap<K, V> newHashMap() {
+    public static <K, V> Map<K, V> newHashMap() {
         return new HashMap<>();
     }
 
@@ -74,13 +78,13 @@ public class CollectionUtils {
      * @see com.google.common.collect.Maps#newHashMapWithExpectedSize
      * @since 3.4.0
      */
-    public static <K, V> HashMap<K, V> newHashMapWithExpectedSize(int expectedSize) {
+    public static <K, V> Map<K, V> newHashMapWithExpectedSize(int expectedSize) {
         return new HashMap<>(capacity(expectedSize));
     }
 
     /**
      * 用来过渡下Jdk1.8下ConcurrentHashMap的性能bug
-     * https://bugs.openjdk.java.net/browse/JDK-8161372
+     * <a href="https://bugs.openjdk.java.net/browse/JDK-8161372">...</a>
      *
      * @param concurrentHashMap ConcurrentHashMap 没限制类型了，非ConcurrentHashMap就别调用这方法了
      * @param key               key
@@ -117,7 +121,7 @@ public class CollectionUtils {
             // This is the calculation used in JDK8 to resize when a putAll
             // happens; it seems to be the most conservative calculation we
             // can make.  0.75 is the default load factor.
-            return (int) ((float) expectedSize / 0.75F + 1.0F);
+            return (int) (expectedSize / 0.75F + 1.0F);
         }
         return Integer.MAX_VALUE; // any large value
     }

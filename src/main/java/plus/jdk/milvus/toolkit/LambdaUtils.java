@@ -1,6 +1,8 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
-import plus.jdk.milvus.toolKit.support.*;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import plus.jdk.milvus.toolkit.support.*;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.AccessibleObject;
@@ -13,6 +15,7 @@ import static java.util.Locale.ENGLISH;
 /**
  * Lambda 解析工具类
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LambdaUtils {
 
     /**
@@ -33,7 +36,7 @@ public final class LambdaUtils {
             return new ReflectLambdaMeta((SerializedLambda) setAccessible(method).invoke(func));
         } catch (Throwable e) {
             // 3. 反射失败使用序列化的方式读取
-            return new ShadowLambdaMeta(plus.jdk.milvus.toolKit.support.SerializedLambda.extract(func));
+            return new ShadowLambdaMeta(plus.jdk.milvus.toolkit.support.SerializedLambda.extract(func));
         }
     }
 

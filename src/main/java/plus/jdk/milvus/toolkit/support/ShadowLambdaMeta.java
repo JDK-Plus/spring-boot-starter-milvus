@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit.support;
+package plus.jdk.milvus.toolkit.support;
 
 public class ShadowLambdaMeta implements LambdaMeta {
     private final SerializedLambda lambda;

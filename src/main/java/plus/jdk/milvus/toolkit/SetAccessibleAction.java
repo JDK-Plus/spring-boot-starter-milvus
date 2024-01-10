@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
 import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;

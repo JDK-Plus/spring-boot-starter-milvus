@@ -1,7 +1,7 @@
-package plus.jdk.milvus.toolKit.support;
+package plus.jdk.milvus.toolkit.support;
 
 import plus.jdk.milvus.common.MilvusException;
-import plus.jdk.milvus.toolKit.LambdaUtils;
+import plus.jdk.milvus.toolkit.LambdaUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

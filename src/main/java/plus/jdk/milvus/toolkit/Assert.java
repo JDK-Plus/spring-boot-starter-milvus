@@ -1,11 +1,15 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
 /**
  * 断言类
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Assert {
 
     /**

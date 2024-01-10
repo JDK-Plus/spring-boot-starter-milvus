@@ -1,6 +1,8 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import plus.jdk.milvus.common.MilvusException;
 
 import java.lang.reflect.AccessibleObject;
@@ -19,6 +21,7 @@ import static java.util.stream.Collectors.toMap;
 /**
  * 反射工具类，提供反射相关的快捷操作
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ReflectionKit {
     /**
      * class field cache

@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit.support;
+package plus.jdk.milvus.toolkit.support;
 
 /**
  * 接受 Int 小类型的处理函数，使用小类型来避免 Java 自动装箱

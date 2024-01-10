@@ -1,7 +1,9 @@
-package plus.jdk.milvus.toolKit.expr;
+package plus.jdk.milvus.toolkit.expr;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import plus.jdk.milvus.enums.ExprLike;
-import plus.jdk.milvus.toolKit.Constants;
+import plus.jdk.milvus.toolkit.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.regex.Pattern;
 /**
  * ExprUtils工具类
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class ExprUtils implements Constants {
 
     private static final Pattern pattern = Pattern.compile("\\{@((\\w+?)|(\\w+?:\\w+?)|(\\w+?:\\w+?:\\w+?))}");

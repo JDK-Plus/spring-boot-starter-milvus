@@ -1,4 +1,7 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -10,6 +13,7 @@ import java.util.List;
  * ClassUtils
  * </p>
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassUtils {
 
     /**
@@ -21,18 +25,6 @@ public final class ClassUtils {
             , "javassist.util.proxy.ProxyObject"
             // javassist
             , "org.apache.ibatis.javassist.util.proxy.ProxyObject");
-    private static ClassLoader systemClassLoader;
-
-    static {
-        try {
-            systemClassLoader = ClassLoader.getSystemClassLoader();
-        } catch (SecurityException ignored) {
-            // AccessControlException on Google App Engine
-        }
-    }
-
-    private ClassUtils() {
-    }
 
     /**
      * 判断传入的类型是否是布尔类型
@@ -72,28 +64,5 @@ public final class ClassUtils {
     public static Class<?> getUserClass(Class<?> clazz) {
         Assert.notNull(clazz, "Class must not be null");
         return isProxy(clazz) ? clazz.getSuperclass() : clazz;
-    }
-
-    /**
-     * <p>
-     * 根据指定的 class ， 实例化一个对象，根据构造参数来实例化
-     * </p>
-     * <p>
-     * 在 java9 及其之后的版本 Class.newInstance() 方法已被废弃
-     * </p>
-     *
-     * @param clazz 需要实例化的对象
-     * @param <T>   类型，由输入类型决定
-     * @return 返回新的实例
-     */
-    public static <T> T newInstance(Class<T> clazz) {
-        try {
-            Constructor<T> constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                 NoSuchMethodException e) {
-            throw ExceptionUtils.mpe("实例化对象时出现错误,请尝试给 %s 添加无参的构造方法", e, clazz.getName());
-        }
     }
 }

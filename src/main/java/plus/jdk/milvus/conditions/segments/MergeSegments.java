@@ -3,7 +3,7 @@ package plus.jdk.milvus.conditions.segments;
 import lombok.AccessLevel;
 import lombok.Getter;
 import plus.jdk.milvus.conditions.IExprSegment;
-import plus.jdk.milvus.toolKit.StringPool;
+import plus.jdk.milvus.toolkit.StringPool;
 
 import java.util.Arrays;
 import java.util.List;

@@ -31,10 +31,10 @@ import plus.jdk.milvus.model.ColumnDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.toolKit.CollectionUtils;
-import plus.jdk.milvus.toolKit.LambdaUtils;
-import plus.jdk.milvus.toolKit.support.LambdaMeta;
-import plus.jdk.milvus.toolKit.support.SFunction;
+import plus.jdk.milvus.toolkit.CollectionUtils;
+import plus.jdk.milvus.toolkit.LambdaUtils;
+import plus.jdk.milvus.toolkit.support.LambdaMeta;
+import plus.jdk.milvus.toolkit.support.SFunction;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
@@ -346,14 +346,15 @@ public class MilvusClientService {
             fieldBuilder.withDescription(column.getDesc());
             fieldBuilder.withPartitionKey(column.getPartitionKey());
             fieldBuilder.withDataType(column.getDataType());
-            fieldBuilder.withPrimaryKey(column.getPrimary());
+            Boolean primary = column.getPrimary();
+            fieldBuilder.withPrimaryKey(primary);
             if (column.vectorColumn()) {
                 fieldBuilder.withDimension(column.getVectorDimension());
             }
             if (column.getDataType() == DataType.VarChar) {
                 fieldBuilder.withMaxLength(column.getMaxLength());
             }
-            if (column.getPrimary()) {
+            if (Boolean.TRUE.equals(primary)) {
                 fieldBuilder.withAutoID(true);
             }
             if (column.canBePartitionKey()) {

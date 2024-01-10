@@ -1,8 +1,12 @@
-package plus.jdk.milvus.toolKit.expr;
+package plus.jdk.milvus.toolkit.expr;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
  * StringEscape ，数据库字符串转义
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class StringEscape {
 
     /**

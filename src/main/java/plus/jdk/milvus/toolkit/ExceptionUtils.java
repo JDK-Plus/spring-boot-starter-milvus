@@ -1,4 +1,4 @@
-package plus.jdk.milvus.toolKit;
+package plus.jdk.milvus.toolkit;
 
 
 import plus.jdk.milvus.common.MilvusException;

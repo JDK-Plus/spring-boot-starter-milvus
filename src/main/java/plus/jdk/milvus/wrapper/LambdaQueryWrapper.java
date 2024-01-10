@@ -8,7 +8,7 @@ import plus.jdk.milvus.conditions.SharedString;
 import plus.jdk.milvus.conditions.query.Query;
 import plus.jdk.milvus.conditions.segments.MergeSegments;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.toolKit.support.SFunction;
+import plus.jdk.milvus.toolkit.support.SFunction;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

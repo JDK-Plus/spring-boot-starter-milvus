@@ -1,7 +1,8 @@
 package plus.jdk.milvus.conditions.segments;
 
+import lombok.EqualsAndHashCode;
 import plus.jdk.milvus.conditions.IExprSegment;
-import plus.jdk.milvus.toolKit.StringPool;
+import plus.jdk.milvus.toolkit.StringPool;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.List;
 /**
  * Expr 片段集合 处理的抽象类
  */
+@EqualsAndHashCode(callSuper = true)
 public abstract class AbstractISegmentList extends ArrayList<IExprSegment> implements IExprSegment, StringPool {
 
     /**
