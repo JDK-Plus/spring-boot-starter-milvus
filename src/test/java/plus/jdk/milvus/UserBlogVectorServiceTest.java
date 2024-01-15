@@ -1,8 +1,8 @@
 package plus.jdk.milvus;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +14,7 @@ import plus.jdk.milvus.model.HNSWIIndexExtra;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @SpringBootTest
-public class UserBlogVectorServiceTest {
+class UserBlogVectorServiceTest {
 
     @Autowired
     private UserBlogVectorDao userBlogVectorDao;
@@ -33,8 +34,7 @@ public class UserBlogVectorServiceTest {
     /**
      * 创建集合和索引
      */
-    @Test
-    public void createCollection() throws MilvusException {
+    void createCollection() throws MilvusException {
         boolean ret = userBlogVectorDao.createCollection();
         HNSWIIndexExtra extra = new HNSWIIndexExtra();
         extra.setM(16);
@@ -49,17 +49,18 @@ public class UserBlogVectorServiceTest {
      * 向集合插入记录
      */
     @Test
-    public void insertVector() throws MilvusException {
+    @Order(2)
+    void insertVector() throws MilvusException {
+        if (!userBlogVectorDao.hasCollection()) {
+            createCollection();
+        }
         String text = "宝贝们！！没睡吧啊啊啊 刚出炉的九图 投票！喜欢图几";
         Long uid = 2656274875L;
-//        long timestamp = System.currentTimeMillis();
-//        Date startTime = new Date(timestamp - 3600 * 24 * 10 * 1000L); //最近3天的发博数据
-//        Date endTime = new Date(timestamp);
         UserBlogVector userBlogVector = new UserBlogVector();
         userBlogVector.setBlogText(text);
         userBlogVector.setUid(uid);
-        userBlogVector.setBlogType(new JSONObject() {{
-            put("type", Arrays.asList("1", "2"));
+        userBlogVector.setBlogType(new ArrayList<String>() {{
+            addAll(Arrays.asList("1", "2"));
         }});
         List<List<Float>> embedding = chatClient.getEmbedding(Collections.singletonList(text));
         userBlogVector.setBlogTextVector(embedding.get(0));
@@ -71,7 +72,11 @@ public class UserBlogVectorServiceTest {
      * 使用其他字段查找相关内容
      */
     @Test
-    public void query() throws MilvusException {
+    @Order(3)
+    void query() throws MilvusException {
+        if (!userBlogVectorDao.hasCollection()) {
+            createCollection();
+        }
         LambdaQueryWrapper<UserBlogVector> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserBlogVector::getUid, 2656274875L)
                 .or()
@@ -83,16 +88,16 @@ public class UserBlogVectorServiceTest {
                                 .or()
                                 .jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("112", "312"), "tasd")
                 );
-        Assertions.assertEquals(wrapper.getExprSegment(), "(uid = 2656274875 OR uid != 1234567890 OR (JSON_CONTAINS (blogType['type'], 1) AND JSON_CONTAINS_ALL (blogType['type'], ['1','2']) OR JSON_CONTAINS_ANY (blogType['tasd'], ['112','312'])))", "");
-//        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
+        Assertions.assertEquals("(uid == 2656274875 or uid != 1234567890 or (json_contains (blog_type['type'], 1) and json_contains_all (blog_type['type'], ['1','2']) or json_contains_any (blog_type['tasd'], ['112','312'])))", wrapper.getExprSegment(), "");
+        List<UserBlogVector> queryResults = userBlogVectorDao.query(wrapper);
         log.info("{}", wrapper.getExprSegment());
     }
 
     /**
      * 使用向量查找相似度最高的内容。可以结合其他字段做条件查询过滤
      */
-    @Test
-    public void search() throws MilvusException {
+    @Order(3)
+    void search() throws MilvusException {
         String text = "宝贝们！！没睡吧啊啊啊 刚出炉的九图 投票！喜欢图几";
         LambdaSearchWrapper<UserBlogVector> wrapper = new LambdaSearchWrapper<>();
         List<List<Float>> embedding = chatClient.getEmbedding(Collections.singletonList(text));
@@ -100,6 +105,9 @@ public class UserBlogVectorServiceTest {
                 .setTopK(10)
                 .eq(UserBlogVector::getUid, 2656274875L);
         wrapper.jsonContainsAny(UserBlogVector::getBlogType, Arrays.asList("1", "2"), "type");
+        if (!userBlogVectorDao.hasCollection()) {
+            createCollection();
+        }
         List<UserBlogVector> searchResults = userBlogVectorDao.search(wrapper);
         log.info("{}", searchResults);
     }
@@ -110,9 +118,22 @@ public class UserBlogVectorServiceTest {
      * =
      */
     @Test
-    public void deleteRecord() throws MilvusException {
+    @Order(4)
+    void deleteRecord() throws MilvusException {
+        if (!userBlogVectorDao.hasCollection()) {
+            createCollection();
+        }
         boolean ret = userBlogVectorDao.remove(12345556);
         log.info("{}", ret);
+    }
+
+    @Test
+    @Order(999)
+    void deleteCollection() throws MilvusException {
+        if (!userBlogVectorDao.hasCollection()) {
+            createCollection();
+        }
+        userBlogVectorDao.dropCollection();
     }
 
 }

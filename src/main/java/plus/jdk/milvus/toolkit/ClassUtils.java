@@ -13,16 +13,6 @@ import java.util.List;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClassUtils {
-    private static ClassLoader systemClassLoader;
-
-    static {
-        try {
-            systemClassLoader = ClassLoader.getSystemClassLoader();
-        } catch (SecurityException ignored) {
-            // AccessControlException on Google App Engine
-        }
-    }
-
     /**
      * 代理 class 的名称
      */
@@ -32,6 +22,15 @@ public final class ClassUtils {
             , "javassist.util.proxy.ProxyObject"
             // javassist
             , "org.apache.ibatis.javassist.util.proxy.ProxyObject");
+    private static ClassLoader systemClassLoader;
+
+    static {
+        try {
+            systemClassLoader = ClassLoader.getSystemClassLoader();
+        } catch (SecurityException ignored) {
+            // AccessControlException on Google App Engine
+        }
+    }
 
     /**
      * 判断传入的类型是否是布尔类型

@@ -46,10 +46,6 @@
         <version>2.7.18</version>
     </parent>
     <distributionManagement>
-        <!--        <snapshotRepository>-->
-        <!--            <id>ossrh</id>-->
-        <!--            <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-        <!--        </snapshotRepository>-->
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
@@ -58,10 +54,6 @@
             <id>ossrh</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-        <!--        <repository>-->
-        <!--            <id>ossrh</id>-->
-        <!--            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
-        <!--        </repository>-->
     </distributionManagement>
 
     <dependencies>
@@ -69,11 +61,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
         </dependency>
         <dependency>
             <groupId>io.milvus</groupId>

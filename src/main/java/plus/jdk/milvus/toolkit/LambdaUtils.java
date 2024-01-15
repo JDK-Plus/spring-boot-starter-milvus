@@ -2,6 +2,8 @@ package plus.jdk.milvus.toolkit;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import plus.jdk.milvus.metadata.CollectionDefinition;
+import plus.jdk.milvus.metadata.CollectionHelper;
 import plus.jdk.milvus.toolkit.support.*;
 
 import java.lang.invoke.SerializedLambda;
@@ -9,6 +11,8 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessController;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Locale.ENGLISH;
 
@@ -17,6 +21,11 @@ import static java.util.Locale.ENGLISH;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class LambdaUtils {
+
+    /**
+     * 字段映射
+     */
+    private static final Map<String, Map<String, ColumnCache>> COLUMN_CACHE_MAP = new ConcurrentHashMap<>();
 
     /**
      * 该缓存可能会在任意不定的时间被清除
@@ -34,7 +43,7 @@ public final class LambdaUtils {
         try {
             Method method = func.getClass().getDeclaredMethod("writeReplace");
             return new ReflectLambdaMeta((SerializedLambda) setAccessible(method).invoke(func), func.getClass().getClassLoader());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // 3. 反射失败使用序列化的方式读取
             return new ShadowLambdaMeta(plus.jdk.milvus.toolkit.support.SerializedLambda.extract(func));
         }
@@ -65,4 +74,47 @@ public final class LambdaUtils {
         return AccessController.doPrivileged(new SetAccessibleAction<>(object));
     }
 
+    /**
+     * 将传入的表信息加入缓存
+     *
+     * @param tableInfo 表信息
+     */
+    public static void installCache(CollectionDefinition tableInfo) {
+        COLUMN_CACHE_MAP.put(tableInfo.getEntityType().getName(), createColumnCacheMap(tableInfo));
+    }
+
+    /**
+     * 缓存实体字段 MAP 信息
+     *
+     * @param info 表信息
+     * @return 缓存 map
+     */
+    private static Map<String, ColumnCache> createColumnCacheMap(CollectionDefinition info) {
+        Map<String, ColumnCache> map;
+
+        if (info.havePK()) {
+            map = CollectionUtils.newHashMapWithExpectedSize(info.getFieldList().size() + 1);
+            map.put(formatKey(info.getKeyProperty()), new ColumnCache(info.getKeyColumn()));
+        } else {
+            map = CollectionUtils.newHashMapWithExpectedSize(info.getFieldList().size());
+        }
+
+        info.getFieldList().forEach(i ->
+                map.put(formatKey(i.getProperty()), new ColumnCache(i.getName()))
+        );
+        return map;
+    }
+
+    /**
+     * 获取实体对应字段 MAP
+     *
+     * @param clazz 实体类
+     * @return 缓存 map
+     */
+    public static Map<String, ColumnCache> getColumnMap(Class<?> clazz) {
+        return CollectionUtils.computeIfAbsent(COLUMN_CACHE_MAP, clazz.getName(), key -> {
+            CollectionDefinition info = CollectionHelper.getCollectionInfo(clazz);
+            return info == null ? null : createColumnCacheMap(info);
+        });
+    }
 }

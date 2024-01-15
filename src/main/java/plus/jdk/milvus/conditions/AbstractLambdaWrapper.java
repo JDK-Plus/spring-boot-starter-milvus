@@ -2,7 +2,9 @@ package plus.jdk.milvus.conditions;
 
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.PropertyNamer;
+import plus.jdk.milvus.metadata.CollectionHelper;
 import plus.jdk.milvus.record.VectorModel;
+import plus.jdk.milvus.toolkit.Assert;
 import plus.jdk.milvus.toolkit.LambdaUtils;
 import plus.jdk.milvus.toolkit.support.ColumnCache;
 import plus.jdk.milvus.toolkit.support.LambdaMeta;
@@ -35,12 +37,28 @@ public abstract class AbstractLambdaWrapper<T extends VectorModel<? extends Vect
     protected ColumnCache getColumnCache(SFunction<T, ?> column) {
         LambdaMeta meta = LambdaUtils.extract(column);
         String fieldName = PropertyNamer.methodToProperty(meta.getImplMethodName());
-        String formatKey = LambdaUtils.formatKey(fieldName);
-        if (columnMap.containsKey(formatKey)) {
-            return columnMap.get(formatKey);
+        Class<?> instantiatedClass = meta.getInstantiatedClass();
+        tryInitCache(instantiatedClass);
+        return getColumnCache(fieldName, instantiatedClass);
+    }
+
+    private void tryInitCache(Class<?> lambdaClass) {
+        final Class<T> entityClass = getEntityClass();
+        if (entityClass != null) {
+            lambdaClass = entityClass;
         }
-        ColumnCache columnCache = new ColumnCache(fieldName);
-        columnMap.put(formatKey, columnCache);
+        Map<String, ColumnCache> cacheMap = LambdaUtils.getColumnMap(lambdaClass);
+        if (cacheMap == null) {
+            CollectionHelper.initCollectionInfo(lambdaClass);
+            cacheMap = LambdaUtils.getColumnMap(lambdaClass);
+        }
+        columnMap.putAll(cacheMap);
+    }
+
+    private ColumnCache getColumnCache(String fieldName, Class<?> lambdaClass) {
+        ColumnCache columnCache = columnMap.get(LambdaUtils.formatKey(fieldName));
+        Assert.notNull(columnCache, "can not find lambda cache for this property [%s] of entity [%s]",
+                fieldName, lambdaClass.getName());
         return columnCache;
     }
 }

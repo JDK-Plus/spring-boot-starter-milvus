@@ -1,1 +1,3 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=plus.jdk.milvus.global.MilvusAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  plus.jdk.milvus.autoconfigure.MilvusPlusAutoConfiguration,\
+  plus.jdk.milvus.autoconfigure.IdentifierGeneratorAutoConfiguration
