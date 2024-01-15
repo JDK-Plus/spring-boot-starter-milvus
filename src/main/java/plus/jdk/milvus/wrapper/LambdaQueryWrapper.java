@@ -26,7 +26,7 @@ public class LambdaQueryWrapper<T extends VectorModel<? extends VectorModel<?>>>
     @Getter
     @Setter
     @Accessors(chain = true)
-    private Long limit;
+    private Long limit = 10L;
 
     /**
      * 查询字段

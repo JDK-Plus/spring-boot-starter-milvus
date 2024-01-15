@@ -27,6 +27,18 @@ public final class Assert {
     }
 
     /**
+     * 断言这个 boolean 为 false
+     * <p>为 true 则抛出异常</p>
+     *
+     * @param expression boolean 值
+     * @param message    消息
+     * @param params     参数
+     */
+    public static void isFalse(boolean expression, String message, Object... params) {
+        isTrue(!expression, message, params);
+    }
+
+    /**
      * 断言这个 object 不为 null
      * <p>为 null 则抛异常</p>
      *

@@ -15,11 +15,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends VectorModel<?>>> implements Serializable {
+public abstract class VectorModelRepositoryImpl<T extends VectorModel<?>>
+        implements VectorModelRepository<T>, Serializable {
 
-    private final Class<T> entityType;
-    private MilvusClientService milvusClientService;
+    protected final Class<T> entityType;
+    protected MilvusClientService milvusClientService;
 
+    @SuppressWarnings("unchecked")
     protected VectorModelRepositoryImpl() {
         Type superClass = getClass().getGenericSuperclass();
         if (superClass instanceof ParameterizedType) {
@@ -31,82 +33,75 @@ public abstract class VectorModelRepositoryImpl<T extends VectorModel<? extends 
     }
 
     public boolean insert(T vectorModel) throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.insert(vectorModel);
+        return getMilvusClientService().insert(vectorModel);
     }
 
     public boolean remove(Object pk) throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.remove(pk, entityType);
+        return getMilvusClientService().remove(pk, entityType);
     }
 
     public boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
         wrapper.setEntityClass(entityType);
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.batchRemove(wrapper);
+        return getMilvusClientService().batchRemove(wrapper);
     }
 
     public boolean createCollection() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createCollection(entityType);
+        return getMilvusClientService().createCollection(entityType);
     }
 
     public void loadCollection() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.loadCollection(entityType);
+        getMilvusClientService().loadCollection(entityType);
     }
 
     public LoadState getLoadState() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.getLoadState(entityType);
+        return getMilvusClientService().getLoadState(entityType);
     }
 
     public Long getLoadProgress() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.getLoadProgress(entityType);
+        return getMilvusClientService().getLoadProgress(entityType);
     }
 
 
     public void releaseCollection() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.releaseCollection(entityType);
+        getMilvusClientService().releaseCollection(entityType);
     }
 
     public boolean createIndex(String indexName, SFunction<T, ?> column, IIndexExtra extraParam) throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.createIndex(entityType, indexName, column, extraParam);
+        return getMilvusClientService().createIndex(entityType, indexName, column, extraParam);
     }
 
     public boolean dropIndex(String indexName) throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.dropIndex(entityType, indexName);
+        return getMilvusClientService().dropIndex(entityType, indexName);
     }
 
     public void dropCollection() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        milvusClientService.dropCollection(entityType);
+        getMilvusClientService().dropCollection(entityType);
     }
 
     public boolean hasCollection() throws MilvusException {
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.hasCollection(entityType);
+        return getMilvusClientService().hasCollection(entityType);
     }
 
     public List<T> search(LambdaSearchWrapper<T> wrapper) throws MilvusException {
         wrapper.setEntityClass(entityType);
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.search(wrapper);
+        return getMilvusClientService().search(wrapper);
     }
 
     public List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
         wrapper.setEntityClass(entityType);
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.query(wrapper);
+        return getMilvusClientService().query(wrapper);
     }
 
     public Page<T> queryPage(LambdaQueryWrapper<T> wrapper, Long page, Long pageSize) throws MilvusException {
         wrapper.setEntityClass(entityType);
-        milvusClientService = MilvusSelector.beanFactory.getBean(MilvusClientService.class);
-        return milvusClientService.queryPage(wrapper, page, pageSize);
+        return getMilvusClientService().queryPage(wrapper, page, pageSize);
+    }
+
+    protected MilvusClientService getMilvusClientService() {
+        if (this.milvusClientService != null) {
+            return this.milvusClientService;
+        }
+        this.milvusClientService = MilvusSelector.applicationContext.getBean(MilvusClientService.class);
+        return this.milvusClientService;
     }
 }

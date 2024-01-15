@@ -3,7 +3,6 @@ package plus.jdk.milvus.global;
 import com.google.gson.Gson;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
-import io.milvus.param.ConnectParam;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.*;
@@ -17,17 +16,14 @@ import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.util.ReflectionUtils;
 import plus.jdk.milvus.annotation.VectorCollectionColumn;
-import plus.jdk.milvus.annotation.VectorCollectionName;
 import plus.jdk.milvus.common.MilvusException;
 import plus.jdk.milvus.common.PropertyNamer;
 import plus.jdk.milvus.conditions.query.QueryWrapper;
-import plus.jdk.milvus.config.MilvusPlusProperties;
-import plus.jdk.milvus.model.CollectionDefinition;
-import plus.jdk.milvus.model.ColumnDefinition;
+import plus.jdk.milvus.metadata.CollectionDefinition;
+import plus.jdk.milvus.metadata.CollectionHelper;
+import plus.jdk.milvus.metadata.ColumnDefinition;
 import plus.jdk.milvus.model.IIndexExtra;
 import plus.jdk.milvus.model.Page;
 import plus.jdk.milvus.record.VectorModel;
@@ -40,63 +36,18 @@ import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class MilvusClientService {
 
-    private final MilvusPlusProperties properties;
 
     private final MilvusServiceClient milvusClient;
 
-    private final BeanFactory beanFactory;
-
     private final Gson gson = new Gson();
 
-    private final Map<Class<?>, CollectionDefinition> tableDefinitionMap = new ConcurrentHashMap<>();
-
-    public MilvusClientService(MilvusPlusProperties properties, BeanFactory beanFactory) {
-        ConnectParam.Builder builder = ConnectParam.newBuilder();
-        if (properties.getHost() != null) {
-            builder.withHost(properties.getHost());
-        }
-        if (properties.getPort() != null) {
-            builder.withPort(properties.getPort());
-        }
-        if (properties.getUserName() != null) {
-            builder.withAuthorization(properties.getUserName(), properties.getPassword());
-        }
-        if (properties.getConnectUri() != null) {
-            builder.withUri(properties.getConnectUri());
-        }
-        if (properties.getConnectTimeout() != null) {
-            builder.withConnectTimeout(properties.getConnectTimeout(), TimeUnit.MILLISECONDS);
-        }
-        if (properties.getRpcDeadline() != null) {
-            builder.withRpcDeadline(properties.getRpcDeadline(), TimeUnit.MILLISECONDS);
-        }
-        if (properties.getDatabase() != null) {
-            builder.withDatabaseName(properties.getDatabase());
-        }
-        if (properties.getSecure() != null) {
-            builder.withSecure(properties.getSecure());
-        }
-        if (properties.getKeepAliveTime() != null) {
-            builder.withKeepAliveTime(properties.getKeepAliveTime(), TimeUnit.MILLISECONDS);
-        }
-        if (properties.getIdleTimeout() != null) {
-            builder.withIdleTimeout(properties.getIdleTimeout(), TimeUnit.MILLISECONDS);
-        }
-        if (properties.getToken() != null) {
-            builder.withToken(properties.getToken());
-        }
-        this.properties = properties;
-        this.beanFactory = beanFactory;
-        this.milvusClient = new MilvusServiceClient(builder.build());
+    public MilvusClientService(MilvusServiceClient milvusClient) {
+        this.milvusClient = milvusClient;
     }
 
     public String getColumnName(SFunction<?, ?> column, Class<?> clazz) throws MilvusException {
@@ -115,66 +66,14 @@ public class MilvusClientService {
         return vectorCollectionColumn.name();
     }
 
-    protected List<Field> getDeclaredFields(Class<?> clazz, List<Field> fields) {
-        if (clazz == null) {
-            return fields;
-        }
-        fields.addAll(Arrays.asList(this.getClass().getDeclaredFields()));
-        getDeclaredFields(clazz.getSuperclass(), fields);
-        return fields;
-    }
-
-    public <T extends VectorModel<?>> CollectionDefinition getTableDefinition(Class<T> clazz) throws MilvusException {
-        if (tableDefinitionMap.containsKey(clazz)) {
-            return tableDefinitionMap.get(clazz);
-        }
-        CollectionDefinition collectionDefinition = this.getCollectionDefinition(clazz);
-        Field[] clazzFields = clazz.getDeclaredFields();
-        for (Field field : clazzFields) {
-            ReflectionUtils.makeAccessible(field);
-            VectorCollectionColumn tableColumn = field.getDeclaredAnnotation(VectorCollectionColumn.class);
-            if (tableColumn == null) {
-                continue;
-            }
-            String columnName = tableColumn.name();
-            VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
-            ColumnDefinition columnDefinition = new ColumnDefinition();
-            columnDefinition.setDesc(tableColumn.desc());
-            columnDefinition.setName(columnName);
-            columnDefinition.setPrimary(tableColumn.primary());
-            columnDefinition.setDataType(tableColumn.dataType());
-            columnDefinition.setVectorTypeHandler(vectorTypeHandler);
-            columnDefinition.setField(field);
-            columnDefinition.setPartitionKey(tableColumn.partitionKey());
-            columnDefinition.setVectorDimension(tableColumn.vectorDimension());
-            columnDefinition.setMaxLength(tableColumn.maxLength());
-            columnDefinition.setIndex(tableColumn.index());
-            columnDefinition.setIndexType(tableColumn.indexType());
-            columnDefinition.setMetricType(tableColumn.metricType());
-            collectionDefinition.getColumns().add(columnDefinition);
-        }
-        this.tableDefinitionMap.put(clazz, collectionDefinition);
-        return collectionDefinition;
-    }
-
-    @NotNull
-    private <T extends VectorModel<?>> CollectionDefinition getCollectionDefinition(Class<T> clazz) {
-        CollectionDefinition collectionDefinition = new CollectionDefinition();
-        VectorCollectionName vectorCollectionName = clazz.getAnnotation(VectorCollectionName.class);
-        if (vectorCollectionName == null) {
-            throw new MilvusException("table model must annotation with @VectorCollectionName");
-        }
-        collectionDefinition.setDescription(vectorCollectionName.description());
-        collectionDefinition.setName(vectorCollectionName.name());
-        collectionDefinition.setDatabase(vectorCollectionName.database());
-        collectionDefinition.setClazz(clazz);
-        return collectionDefinition;
-    }
-
     public <T extends VectorModel<?>> boolean remove(Object pk, Class<T> clazz) throws MilvusException {
-        CollectionDefinition collection = getTableDefinition(clazz);
+        CollectionDefinition collection = CollectionHelper.getCollectionInfo(clazz);
         String columnName = collection.getPrimaryColumn().getName();
         String expression = new QueryWrapper<T>().in(columnName, pk).getExprSegment();
+        return remove(collection, expression);
+    }
+
+    private boolean remove(CollectionDefinition collection, String expression) {
         if (StringUtils.isEmpty(expression)) {
             throw new MilvusException("expression is null");
         }
@@ -187,22 +86,14 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean batchRemove(LambdaQueryWrapper<T> wrapper) throws MilvusException {
-        CollectionDefinition collection = getTableDefinition(wrapper.getEntityClass());
+        CollectionDefinition collection = CollectionHelper.getCollectionInfo(wrapper.getEntityClass());
         String expression = wrapper.getExprSelect();
-        if (StringUtils.isEmpty(expression)) {
-            throw new MilvusException("expression is null");
-        }
-        DeleteParam.Builder builder = DeleteParam.newBuilder().withCollectionName(collection.getName()).withExpr(expression);
-        R<MutationResult> resultR = milvusClient.delete(builder.build());
-        if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
-            throw new MilvusException(resultR.getException().getMessage());
-        }
-        return true;
+        return remove(collection, expression);
     }
 
 
     public <T extends VectorModel<?>> Boolean insert(T vectorModel) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(vectorModel.getClass());
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(vectorModel.getClass());
         InsertParam.Builder builder = InsertParam.newBuilder();
         List<InsertParam.Field> dataFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
@@ -212,8 +103,8 @@ public class MilvusClientService {
             if (value == null) {
                 continue;
             }
-            VectorTypeHandler vectorTypeHandler = columnDefinition.getVectorTypeHandler();
-            List<?> dataVector = vectorTypeHandler.serialize(value);
+            VectorTypeHandler<Object> vectorTypeHandler = columnDefinition.getVectorTypeHandler();
+            List<Object> dataVector = vectorTypeHandler.serialize(value);
             dataFields.add(new InsertParam.Field(columnName, dataVector));
         }
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
@@ -236,7 +127,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> void loadCollection(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         LoadCollectionParam.Builder builder = LoadCollectionParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
@@ -249,12 +140,12 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> void releaseCollection(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName()).build());
     }
 
     public <T extends VectorModel<?>> void dropCollection(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         DropCollectionParam.Builder builder = DropCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
@@ -266,7 +157,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean hasCollection(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         HasCollectionParam.Builder builder = HasCollectionParam.newBuilder().withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
             builder.withDatabaseName(collectionDefinition.getDatabase());
@@ -280,7 +171,7 @@ public class MilvusClientService {
 
 
     public <T extends VectorModel<?>> boolean dropIndex(Class<T> clazz, String indexName) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         DropIndexParam.Builder builder = DropIndexParam.newBuilder().withCollectionName(collectionDefinition.getName()).withIndexName(indexName);
         R<RpcStatus> resultR = milvusClient.dropIndex(builder.build());
         if (resultR.getStatus() != R.Status.Success.getCode() || resultR.getException() != null) {
@@ -290,7 +181,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> LoadState getLoadState(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         GetLoadStateParam.Builder builder = GetLoadStateParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {
@@ -304,7 +195,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> Long getLoadProgress(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         GetLoadingProgressParam.Builder builder = GetLoadingProgressParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         R<GetLoadingProgressResponse> resultR = milvusClient.getLoadingProgress(builder.build());
@@ -315,7 +206,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean createIndex(Class<T> clazz, String indexName, SFunction<?, ?> column, IIndexExtra extra) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         CreateIndexParam.Builder builder = CreateIndexParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         String columnName = getColumnName(column, clazz);
@@ -336,7 +227,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> boolean createCollection(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         builder.withDescription(collectionDefinition.getDescription());
@@ -352,6 +243,14 @@ public class MilvusClientService {
                 fieldBuilder.withDimension(column.getVectorDimension());
             }
             if (column.getDataType() == DataType.VarChar) {
+                fieldBuilder.withMaxLength(column.getMaxLength());
+            }
+            if (column.getDataType() == DataType.Array) {
+                if (column.getElementType() == DataType.None) {
+                    throw new MilvusException(column.getName() + " column must set elementType");
+                }
+                fieldBuilder.withElementType(column.getElementType());
+                fieldBuilder.withMaxCapacity(column.getMaxCapacity());
                 fieldBuilder.withMaxLength(column.getMaxLength());
             }
             if (Boolean.TRUE.equals(primary)) {
@@ -382,7 +281,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> List<T> search(LambdaSearchWrapper<T> wrapper, Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
             if (columnDefinition.vectorColumn()) {
@@ -393,7 +292,7 @@ public class MilvusClientService {
         SearchParam.Builder builder = SearchParam.newBuilder();
         String vectorColumnName = getColumnName(wrapper.getVectorColumn(), clazz);
         ColumnDefinition columnDefinition = collectionDefinition.getColumnByColumnName(vectorColumnName);
-        VectorTypeHandler vectorTypeHandler = columnDefinition.getVectorTypeHandler();
+        VectorTypeHandler<Object> vectorTypeHandler = columnDefinition.getVectorTypeHandler();
         List<?> vectors = vectorTypeHandler.serialize(wrapper.getVectorValue());
         builder.withVectors(vectors);
         builder.withVectorFieldName(columnDefinition.getName());
@@ -402,7 +301,7 @@ public class MilvusClientService {
         builder.withMetricType(columnDefinition.getMetricType());
         builder.withOutFields(outFields);
         builder.withTopK(wrapper.getTopK());
-        String expression = wrapper.getExprSelect();
+        String expression = wrapper.getExprSegment();
         if (!StringUtils.isEmpty(expression)) {
             builder.withExpr(expression);
         }
@@ -440,7 +339,7 @@ public class MilvusClientService {
 
     public <T extends VectorModel<?>> List<T> query(LambdaQueryWrapper<T> wrapper) throws MilvusException {
         Class<T> clazz = wrapper.getEntityClass();
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         List<String> outFields = new ArrayList<>();
         for (ColumnDefinition columnDefinition : collectionDefinition.getColumns()) {
             if (columnDefinition.vectorColumn()) {
@@ -491,7 +390,7 @@ public class MilvusClientService {
     }
 
     public <T extends VectorModel<?>> GetCollectionStatisticsResponse getCollectionStatistics(Class<T> clazz) throws MilvusException {
-        CollectionDefinition collectionDefinition = getTableDefinition(clazz);
+        CollectionDefinition collectionDefinition = CollectionHelper.getCollectionInfo(clazz);
         GetCollectionStatisticsParam.Builder builder = GetCollectionStatisticsParam.newBuilder();
         builder.withCollectionName(collectionDefinition.getName());
         if (!StringUtils.isEmpty(collectionDefinition.getDatabase())) {

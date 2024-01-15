@@ -20,7 +20,7 @@ This component is a Milvus component written in the style of mybatis-plus. It al
 <dependency>
     <groupId>plus.jdk</groupId>
     <artifactId>spring-boot-starter-milvus</artifactId>
-    <version>1.1.0</version>
+    <version>${last.version}</version>
 </dependency>
 ```
 

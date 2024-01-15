@@ -383,10 +383,10 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      */
     protected IExprSegment inExpression(Object[] values) {
         if (ArrayUtils.isEmpty(values)) {
-            return () -> "()";
+            return () -> "[]";
         }
-        return () -> Arrays.stream(values).map(i -> (String) (i))
-                .collect(joining(COMMA, LEFT_BRACKET, RIGHT_BRACKET));
+        return () -> Arrays.stream(values).map(String::valueOf)
+                .collect(joining(COMMA, LEFT_SQ_BRACKET, RIGHT_SQ_BRACKET));
     }
 
     /**

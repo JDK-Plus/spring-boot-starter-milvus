@@ -1,7 +1,10 @@
-package plus.jdk.milvus.config;
+package plus.jdk.milvus.autoconfigure;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import plus.jdk.milvus.config.GlobalConfig;
+import plus.jdk.milvus.toolkit.GlobalConfigUtils;
 
 
 /**
@@ -79,4 +82,10 @@ public class MilvusPlusProperties {
      * The keep-alive value must be greater than zero.
      */
     private Long keepAliveTime;
+
+    /**
+     * 全局配置
+     */
+    @NestedConfigurationProperty
+    private GlobalConfig globalConfig = GlobalConfigUtils.defaults();
 }

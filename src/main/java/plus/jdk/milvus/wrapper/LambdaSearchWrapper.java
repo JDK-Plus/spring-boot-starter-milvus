@@ -62,7 +62,6 @@ public class LambdaSearchWrapper<T extends VectorModel<? extends VectorModel<?>>
     private SharedString exprSelect = new SharedString();
 
     public LambdaSearchWrapper() {
-        // 如果无参构造函数，请注意实体 NULL 情况 SET 必须有否则 SQL 异常
         this((T) null);
     }
 
