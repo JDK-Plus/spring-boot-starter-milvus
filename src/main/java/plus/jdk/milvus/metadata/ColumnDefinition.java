@@ -111,11 +111,12 @@ public class ColumnDefinition {
     /**
      * 全新的 存在 TableField 注解时使用的构造函数
      *
-     * @param globalConfig     全局配置
-     * @param tableInfo        collection信息
-     * @param field            字段
-     * @param collectionColumn 字段注解
-     * @param existTableLogic  是否存在逻辑删除
+     * @param globalConfig      全局配置
+     * @param tableInfo         collection信息
+     * @param field             字段
+     * @param collectionColumn  字段注解
+     * @param vectorTypeHandler 向量化处理器
+     * @param existTableLogic   是否存在逻辑删除
      */
     public ColumnDefinition(GlobalConfig globalConfig, CollectionDefinition tableInfo, Field field, VectorCollectionColumn collectionColumn,
                             VectorTypeHandler<?> vectorTypeHandler, boolean existTableLogic) {
