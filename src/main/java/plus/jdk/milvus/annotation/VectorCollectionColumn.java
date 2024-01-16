@@ -29,7 +29,7 @@ public @interface VectorCollectionColumn {
     DataType dataType();
 
     /**
-     * 当数据类型【dataType】为 {@link DataType.Array} 时，需要指定数组元素的类型【elementType】
+     * 当数据类型【dataType】为 {DataType.Array} 时，需要指定数组元素的类型【elementType】
      *
      * @return 数组类型字段的元素类型
      */
