@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>plus.jdk</groupId>
     <artifactId>spring-boot-starter-milvus</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.6.1</version>
     <name>spring-boot-starter-milvus</name>
 
     <description>spring-boot-starter-milvus</description>

@@ -151,6 +151,7 @@ public class MilvusClientService {
             columnDefinition.setVectorDimension(tableColumn.vectorDimension());
             columnDefinition.setMaxLength(tableColumn.maxLength());
             columnDefinition.setIndex(tableColumn.index());
+            columnDefinition.setAutoId(tableColumn.autoId());
             columnDefinition.setIndexType(tableColumn.indexType());
             columnDefinition.setMetricType(tableColumn.metricType());
             collectionDefinition.getColumns().add(columnDefinition);
@@ -344,6 +345,7 @@ public class MilvusClientService {
             if (column.getPrimary()) {
                 fieldBuilder.withAutoID(true);
             }
+            fieldBuilder.withAutoID(column.isAutoId());
             if (column.canBePartitionKey()) {
                 fieldBuilder.withPartitionKey(column.getPartitionKey());
             }

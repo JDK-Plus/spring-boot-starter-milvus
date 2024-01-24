@@ -61,6 +61,11 @@ public @interface VectorCollectionColumn {
     boolean index() default false;
 
     /**
+     * 是否为该字段自动生成id
+     */
+    boolean autoId() default false;
+
+    /**
      * @return 索引类型
      * <a href="https://milvus.io/docs/index.md">...</a>
      */

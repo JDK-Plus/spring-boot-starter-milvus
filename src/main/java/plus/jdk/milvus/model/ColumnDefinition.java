@@ -69,6 +69,11 @@ public class ColumnDefinition {
     private boolean index = false;
 
     /**
+     * 是否为该字段自动生成id
+     */
+    private boolean autoId = false;
+
+    /**
      * 索引类型
      * <a href="https://milvus.io/docs/index.md">...</a>
      */
