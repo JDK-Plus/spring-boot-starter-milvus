@@ -320,7 +320,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
         }
         if (ArrayUtils.isNotEmpty(params)) {
             for (int i = 0; i < params.length; ++i) {
-                String target = Constants.LEFT_BRACE + i + Constants.RIGHT_BRACE;
+                String target = LEFT_BRACE + i + RIGHT_BRACE;
                 if (exprStr.contains(target)) {
                     exprStr = exprStr.replace(target, (String) params[i]);
                 } else {
@@ -339,7 +339,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      */
     protected final String formatParam(Object param) {
         if (param instanceof String) {
-            return Constants.SINGLE_QUOTE + param + Constants.SINGLE_QUOTE;
+            return SINGLE_QUOTE + param + SINGLE_QUOTE;
         }
         if (param instanceof Number) {
             return param.toString();
@@ -369,10 +369,10 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      */
     protected IExprSegment inExpression(Collection<?> value) {
         if (CollectionUtils.isEmpty(value)) {
-            return () -> "()";
+            return () -> "[]";
         }
-        return () -> value.stream().map(i -> (String) (i))
-                .collect(joining(COMMA, LEFT_BRACKET, RIGHT_BRACKET));
+        return () -> value.stream().map(this::formatParam)
+                .collect(joining(COMMA, LEFT_SQ_BRACKET, RIGHT_SQ_BRACKET));
     }
 
     /**
@@ -382,11 +382,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      * @return in表达式
      */
     protected IExprSegment inExpression(Object[] values) {
-        if (ArrayUtils.isEmpty(values)) {
-            return () -> "[]";
-        }
-        return () -> Arrays.stream(values).map(String::valueOf)
-                .collect(joining(COMMA, LEFT_SQ_BRACKET, RIGHT_SQ_BRACKET));
+        return this.inExpression(Arrays.asList(values));
     }
 
     /**
