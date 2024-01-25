@@ -91,7 +91,7 @@ public class MilvusPlusFactoryBean implements FactoryBean<MilvusServiceClient>, 
 
     static class MilvusPlusBanner implements Banner {
 
-        private static final int STRAP_LINE_SIZE = 42;
+        private static final int STRAP_LINE_SIZE = 66;
         private final String[] bannerLines = {
                 "    __  ___ _  __                            ____   __            ",
                 "   /  |/  /(_)/ /_   __ __  __ _____        / __ \\ / /__  __ _____",
@@ -112,7 +112,7 @@ public class MilvusPlusFactoryBean implements FactoryBean<MilvusServiceClient>, 
             while (padding.length() < STRAP_LINE_SIZE - (version.length() + MILVUS_PLUS.length())) {
                 padding.append(" ");
             }
-            out.println(AnsiOutput.toString(AnsiColor.GREEN, MILVUS_PLUS, AnsiColor.DEFAULT, padding.toString(),
+            out.println(AnsiOutput.toString(AnsiColor.BLUE, MILVUS_PLUS, AnsiColor.DEFAULT, padding.toString(),
                     AnsiStyle.FAINT, version));
             out.println();
         }

@@ -54,7 +54,7 @@ public abstract class AbstractWrapper<T extends VectorModel<? extends VectorMode
      */
     private T entity;
     /**
-     * 实体类型(主要用于确定泛型以及取TableInfo缓存)
+     * 实体类型(主要用于确定泛型以及取CollectionInfo缓存)
      */
     private Class<T> entityClass;
 

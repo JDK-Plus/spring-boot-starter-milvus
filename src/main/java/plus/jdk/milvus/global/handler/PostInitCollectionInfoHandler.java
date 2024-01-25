@@ -4,7 +4,7 @@ import plus.jdk.milvus.metadata.CollectionDefinition;
 import plus.jdk.milvus.metadata.ColumnDefinition;
 
 /**
- * 初始化 TableInfo 同时进行一些操作
+ * 初始化 CollectionInfo 同时进行一些操作
  *
  * @author miemie
  * @since 2022-09-20
@@ -12,7 +12,7 @@ import plus.jdk.milvus.metadata.ColumnDefinition;
 public interface PostInitCollectionInfoHandler {
 
     /**
-     * 提供对 TableInfo 增强的能力
+     * 提供对 CollectionInfo 增强的能力
      *
      * @param entityType 实体类型
      * @return {@link CollectionDefinition}
@@ -22,7 +22,7 @@ public interface PostInitCollectionInfoHandler {
     }
 
     /**
-     * 参与 TableInfo 初始化
+     * 参与 CollectionInfo 初始化
      *
      * @param tableInfo TableInfo
      */
@@ -31,7 +31,7 @@ public interface PostInitCollectionInfoHandler {
     }
 
     /**
-     * 参与 TableFieldInfo 初始化
+     * 参与 CollectionFieldInfo 初始化
      *
      * @param fieldInfo TableFieldInfo
      */

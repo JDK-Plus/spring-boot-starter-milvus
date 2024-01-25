@@ -91,9 +91,9 @@ public class CollectionHelper {
      * @return 数据库表反射信息
      */
     public static synchronized CollectionDefinition initCollectionInfo(Class<?> clazz) {
-        CollectionDefinition targetTableInfo = COLLECTION_INFO_CACHE.get(clazz);
-        if (targetTableInfo != null && (clazz.equals(targetTableInfo.getClazz()))) {
-            return targetTableInfo;
+        CollectionDefinition targetCollectionInfo = COLLECTION_INFO_CACHE.get(clazz);
+        if (targetCollectionInfo != null && (clazz.equals(targetCollectionInfo.getClazz()))) {
+            return targetCollectionInfo;
             // 不是同一个 Configuration,进行重新初始化
         }
         GlobalConfig globalConfig = GlobalConfigUtils.getGlobalConfig(clazz);
@@ -104,7 +104,7 @@ public class CollectionHelper {
         /* 初始化表名相关 */
         initCollectionName(clazz, globalConfig, definition);
         /* 初始化字段相关 */
-        initTableFields(clazz, globalConfig, definition);
+        initCollectionFields(clazz, globalConfig, definition);
 
         /* 自动构建 resultMap */
         postInitCollectionInfoHandler.postCollectionInfo(definition);
@@ -136,18 +136,18 @@ public class CollectionHelper {
         }
 
         String collectionName = clazz.getSimpleName();
-        String tablePrefix = dbConfig.getCollectionPrefix();
+        String collectionPrefix = dbConfig.getCollectionPrefix();
 
         if (StringUtils.isNotBlank(vectorCollectionName.name())) {
             collectionName = vectorCollectionName.name();
         } else {
-            collectionName = initTableNameWithDbConfig(collectionName, dbConfig);
+            collectionName = initCollectionNameWithDbConfig(collectionName, dbConfig);
         }
 
         // 表追加前缀
         String targetCollectionName = collectionName;
-        if (StringUtils.isNotBlank(tablePrefix)) {
-            targetCollectionName = tablePrefix + targetCollectionName;
+        if (StringUtils.isNotBlank(collectionPrefix)) {
+            targetCollectionName = collectionPrefix + targetCollectionName;
         }
 
         // 表格式化
@@ -173,7 +173,7 @@ public class CollectionHelper {
      * @param globalConfig         全局配置
      * @param collectionDefinition 数据库表反射信息
      */
-    private static void initTableFields(Class<?> clazz, GlobalConfig globalConfig, CollectionDefinition collectionDefinition) {
+    private static void initCollectionFields(Class<?> clazz, GlobalConfig globalConfig, CollectionDefinition collectionDefinition) {
         AnnotationHandler annotationHandler = globalConfig.getAnnotationHandler();
         PostInitCollectionInfoHandler postInitCollectionInfoHandler = globalConfig.getPostInitCollectionInfoHandler();
         List<Field> list = getAllFields(clazz, annotationHandler);
@@ -237,7 +237,7 @@ public class CollectionHelper {
      * @param dbConfig  DbConfig
      * @return 表名
      */
-    private static String initTableNameWithDbConfig(String className, GlobalConfig.MilvusConfig dbConfig) {
+    private static String initCollectionNameWithDbConfig(String className, GlobalConfig.MilvusConfig dbConfig) {
         String collectionName = className;
         // 开启表名下划线申明
         if (dbConfig.isTableUnderline()) {

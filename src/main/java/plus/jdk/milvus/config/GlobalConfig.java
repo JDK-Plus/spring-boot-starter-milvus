@@ -34,7 +34,7 @@ public class GlobalConfig implements Serializable {
     private AnnotationHandler annotationHandler = new AnnotationHandler() {
     };
     /**
-     * 参与 TableInfo 的初始化
+     * 参与 CollectionInfo 的初始化
      */
     private PostInitCollectionInfoHandler postInitCollectionInfoHandler = new PostInitCollectionInfoHandler() {
     };
