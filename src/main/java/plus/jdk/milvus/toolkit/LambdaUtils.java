@@ -77,10 +77,10 @@ public final class LambdaUtils {
     /**
      * 将传入的表信息加入缓存
      *
-     * @param tableInfo 表信息
+     * @param collectionDefinition 表信息
      */
-    public static void installCache(CollectionDefinition tableInfo) {
-        COLUMN_CACHE_MAP.put(tableInfo.getEntityType().getName(), createColumnCacheMap(tableInfo));
+    public static void installCache(CollectionDefinition collectionDefinition) {
+        COLUMN_CACHE_MAP.put(collectionDefinition.getEntityType().getName(), createColumnCacheMap(collectionDefinition));
     }
 
     /**

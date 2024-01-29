@@ -109,16 +109,16 @@ public class ColumnDefinition {
     }
 
     /**
-     * 全新的 存在 TableField 注解时使用的构造函数
+     * 全新的 存在 CollectionField 注解时使用的构造函数
      *
-     * @param globalConfig      全局配置
-     * @param tableInfo         collection信息
-     * @param field             字段
-     * @param collectionColumn  字段注解
-     * @param vectorTypeHandler 向量化处理器
-     * @param existTableLogic   是否存在逻辑删除
+     * @param globalConfig         全局配置
+     * @param collectionDefinition collection信息
+     * @param field                字段
+     * @param collectionColumn     字段注解
+     * @param vectorTypeHandler    向量化处理器
+     * @param existTableLogic      是否存在逻辑删除
      */
-    public ColumnDefinition(GlobalConfig globalConfig, CollectionDefinition tableInfo, Field field, VectorCollectionColumn collectionColumn,
+    public ColumnDefinition(GlobalConfig globalConfig, CollectionDefinition collectionDefinition, Field field, VectorCollectionColumn collectionColumn,
                             VectorTypeHandler<?> vectorTypeHandler, boolean existTableLogic) {
 
         GlobalConfig.MilvusConfig dbConfig = globalConfig.getMilvusConfig();
@@ -148,7 +148,7 @@ public class ColumnDefinition {
         String column = collectionColumn.name();
         if (StringUtils.isBlank(column)) {
             column = this.property;
-            if (tableInfo.isUnderCamel()) {
+            if (collectionDefinition.isUnderCamel()) {
                 /* 开启字段下划线申明 */
                 column = StringUtils.camelToUnderline(column);
             }
@@ -170,15 +170,15 @@ public class ColumnDefinition {
     }
 
     /**
-     * 不存在 TableField 注解时, 使用的构造函数
+     * 不存在 CollectionField 注解时, 使用的构造函数
      *
      * @param globalConfig         全局配置
      * @param collectionDefinition collection信息
      * @param field                字段
-     * @param existTableLogic      是否存在逻辑删除
+     * @param existCollectionLogic 是否存在逻辑删除
      */
     public ColumnDefinition(GlobalConfig globalConfig, CollectionDefinition collectionDefinition, Field field,
-                            boolean existTableLogic) {
+                            boolean existCollectionLogic) {
         field.setAccessible(true);
         this.field = field;
         this.property = field.getName();
@@ -188,7 +188,7 @@ public class ColumnDefinition {
         GlobalConfig.MilvusConfig dbConfig = globalConfig.getMilvusConfig();
 //        this.insertStrategy = dbConfig.getInsertStrategy();
 //        this.updateStrategy = dbConfig.getUpdateStrategy();
-//        this.initLogicDelete(globalConfig, field, existTableLogic);
+//        this.initLogicDelete(globalConfig, field, existCollectionLogic);
 
         String column = this.property;
         if (collectionDefinition.isUnderCamel()) {
