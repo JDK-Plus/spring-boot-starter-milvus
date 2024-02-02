@@ -33,7 +33,7 @@ public @interface VectorCollectionColumn {
     /**
      * @return 数据向量化处理的handler
      */
-    Class<? extends VectorTypeHandler<?, ?>> EmbeddingTypeHandler() default UnknownTypeHandler.class;
+    Class<? extends VectorTypeHandler<?, ?>> typeHandler() default UnknownTypeHandler.class;
 
     /**
      * @return 字段描述

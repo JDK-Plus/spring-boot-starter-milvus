@@ -1,7 +1,6 @@
 package plus.jdk.milvus.global;
 
 import com.google.gson.Gson;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -12,7 +11,6 @@ import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
 import io.milvus.response.QueryResultsWrapper;
-import io.milvus.response.SearchResultsWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -27,7 +25,6 @@ import plus.jdk.milvus.common.*;
 import plus.jdk.milvus.config.MilvusPlusProperties;
 import plus.jdk.milvus.model.*;
 import plus.jdk.milvus.record.VectorModel;
-import plus.jdk.milvus.wrapper.AbstractLambdaWrapper;
 import plus.jdk.milvus.wrapper.LambdaQueryWrapper;
 import plus.jdk.milvus.wrapper.LambdaSearchWrapper;
 
@@ -139,7 +136,7 @@ public class MilvusClientService {
                 continue;
             }
             String columnName = tableColumn.name();
-            VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.EmbeddingTypeHandler());
+            VectorTypeHandler<?, ?> vectorTypeHandler = beanFactory.getBean(tableColumn.typeHandler());
             ColumnDefinition columnDefinition = new ColumnDefinition();
             columnDefinition.setDesc(tableColumn.desc());
             columnDefinition.setName(columnName);
@@ -420,7 +417,8 @@ public class MilvusClientService {
                     continue;
                 }
                 ReflectionUtils.makeAccessible(column.getField());
-                ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
+                vectorTypeHandler = column.getVectorTypeHandler();
+                ReflectionUtils.setField(column.getField(), data, vectorTypeHandler.deserialize(rowRecord.get(columnName)));
             }
             resultRows.add(data);
         }
@@ -472,7 +470,8 @@ public class MilvusClientService {
                     continue;
                 }
                 ReflectionUtils.makeAccessible(column.getField());
-                ReflectionUtils.setField(column.getField(), data, rowRecord.get(columnName));
+                VectorTypeHandler vectorTypeHandler = column.getVectorTypeHandler();
+                ReflectionUtils.setField(column.getField(), data, vectorTypeHandler.deserialize(rowRecord.get(columnName)));
             }
             resultRows.add(data);
         }
