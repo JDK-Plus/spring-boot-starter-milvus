@@ -28,6 +28,12 @@ public class UserBlogVector extends VectorModel<UserBlogVector> {
     private Long uid;
 
     /**
+     * uid
+     */
+    @VectorCollectionColumn(name = "user_id", dataType = DataType.Int64)
+    private Long userId;
+
+    /**
      * 博文文本
      */
     @VectorCollectionColumn(name = "blog_text", dataType = DataType.VarChar, maxLength = 1024)
