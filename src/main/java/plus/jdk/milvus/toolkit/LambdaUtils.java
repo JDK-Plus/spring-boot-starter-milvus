@@ -112,9 +112,19 @@ public final class LambdaUtils {
      * @return 缓存 map
      */
     public static Map<String, ColumnCache> getColumnMap(Class<?> clazz) {
-        return CollectionUtils.computeIfAbsent(COLUMN_CACHE_MAP, clazz.getName(), key -> {
-            CollectionDefinition info = CollectionHelper.getCollectionInfo(clazz);
-            return info == null ? null : createColumnCacheMap(info);
-        });
+        if (COLUMN_CACHE_MAP.containsKey(clazz.getName())) {
+            return COLUMN_CACHE_MAP.get(clazz.getName());
+        }
+        CollectionDefinition info = CollectionHelper.getCollectionInfo(clazz);
+        if (info == null) {
+            return null;
+        }
+        Map<String, ColumnCache> columnCacheMap = createColumnCacheMap(info);
+        COLUMN_CACHE_MAP.put(clazz.getName(), columnCacheMap);
+        return columnCacheMap;
+//        return COLUMN_CACHE_MAP.computeIfAbsent(clazz.getName(), key -> {
+//            CollectionDefinition info = CollectionHelper.getCollectionInfo(clazz);
+//            return info == null ? null : createColumnCacheMap(info);
+//        });
     }
 }

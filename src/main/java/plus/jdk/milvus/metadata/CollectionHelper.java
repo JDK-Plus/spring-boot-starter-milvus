@@ -94,8 +94,8 @@ public class CollectionHelper {
         CollectionDefinition targetCollectionInfo = COLLECTION_INFO_CACHE.get(clazz);
         if (targetCollectionInfo != null && (clazz.equals(targetCollectionInfo.getClazz()))) {
             return targetCollectionInfo;
-            // 不是同一个 Configuration,进行重新初始化
         }
+        // 不是同一个 Configuration,进行重新初始化
         GlobalConfig globalConfig = GlobalConfigUtils.getGlobalConfig(clazz);
         PostInitCollectionInfoHandler postInitCollectionInfoHandler = globalConfig.getPostInitCollectionInfoHandler();
         /* 没有获取到缓存信息,则初始化 */
