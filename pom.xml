@@ -18,7 +18,7 @@
         <commons-text.version>1.11.0</commons-text.version>
         <snakeyaml.version>2.0</snakeyaml.version>
         <okhttp.version>4.12.0</okhttp.version>
-        <milvus-sdk.version>2.3.4</milvus-sdk.version><!-- CURRENT_milvus_VERSION -->
+        <milvus-sdk.version>2.4.0</milvus-sdk.version><!-- CURRENT_milvus_VERSION -->
     </properties>
 
     <licenses>
